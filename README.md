@@ -8,7 +8,7 @@ way to more is your **circle**, the people you trust. Then the part that makes i
 your friends **share your screen time** and **race to keep the longest streak** within your
 limits. No passwords, no accounts, no servers, no codes to type.
 
-<p align="center"><em>Ready-to-install APK: <a href="release/Pact-v5.5.apk"><code>release/Pact-v5.5.apk</code></a></em></p>
+<p align="center"><em>Ready-to-install APK: <a href="release/Pact-v5.6.apk"><code>release/Pact-v5.6.apk</code></a></em></p>
 
 ---
 
@@ -151,7 +151,8 @@ squad's combined streak · per-app daily limits · **challenges & a live streak 
 end-to-end-encrypted screen-time sharing · **live squad presence** (a coarse, short-lived
 in-the-zone / off-track / idle status, no app names) · **unlock requests as interactive
 "Lockbox" widgets inside the chat** (grant/deny after the roast, flip-to-green) · confetti,
-haptics, and a pulsing co-op tower · a one-tap shareable streak card · **remote
+haptics, and a pulsing co-op tower · a one-tap shareable streak card · a **weekly Receipt** (a
+Sunday "Wrapped" of your week, rendered as a shareable receipt, with a Sunday nudge) · **remote
 pairing by short code** (or QR in person) · a keep-alive foreground service + optional Usage-Access
 redundancy · **focus sessions** (lock everything for
 a set stretch, no top-ups) · urge tracking · post-break reflection · an Insights screen (streak,
@@ -161,7 +162,7 @@ passphrase backup + stats CSV · animated, Compose-drawn illustrations · 10 lan
 
 ## Install
 
-Copy `release/Pact-v5.5.apk` to **both** phones — yours and each trusted person's — allow
+Copy `release/Pact-v5.6.apk` to **both** phones — yours and each trusted person's — allow
 "install from unknown sources", and follow the in-app setup. Requires Android 8.0+ (API 26).
 No Google services needed.
 

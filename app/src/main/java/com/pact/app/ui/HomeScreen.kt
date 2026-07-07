@@ -39,6 +39,7 @@ import androidx.compose.material.icons.rounded.Bolt
 import androidx.compose.material.icons.rounded.EmojiEvents
 import androidx.compose.material.icons.rounded.Group
 import androidx.compose.material.icons.rounded.Lock
+import androidx.compose.material.icons.rounded.ReceiptLong
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.Shield
 import androidx.compose.material3.AlertDialog
@@ -91,6 +92,7 @@ fun HomeScreen(
     onOpenStats: () -> Unit,
     onOpenCircle: () -> Unit,
     onOpenChallenges: () -> Unit,
+    onOpenReceipts: () -> Unit,
 ) {
     val context = LocalContext.current
     val network = remember { TrustNetwork.get(context) }
@@ -149,6 +151,9 @@ fun HomeScreen(
             }
             IconButton(onClick = onOpenChallenges) {
                 Icon(Icons.Rounded.EmojiEvents, contentDescription = stringResource(R.string.challenges_title), tint = TextSecondary)
+            }
+            IconButton(onClick = onOpenReceipts) {
+                Icon(Icons.Rounded.ReceiptLong, contentDescription = stringResource(R.string.receipts_title), tint = TextSecondary)
             }
             IconButton(onClick = onOpenCircle) {
                 Icon(Icons.Rounded.Group, contentDescription = stringResource(R.string.circle_title), tint = TextSecondary)

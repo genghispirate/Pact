@@ -163,6 +163,21 @@
     <string name="widget_status_denied">Denied 🛑</string>
     <string name="widget_status_expired">Expired</string>
 
+    <!-- weekly receipt -->
+    <string name="receipts_title">Receipts</string>
+    <string name="receipt_title">WEEKLY RECEIPT</string>
+    <string name="receipt_streak">Day streak</string>
+    <string name="receipt_interventions">Pact stepped in</string>
+    <string name="receipt_walkaways">Walk-aways</string>
+    <string name="receipt_denied">Squad denied</string>
+    <string name="receipt_tower">Tower level</string>
+    <string name="receipt_footer">pact · join me</string>
+    <string name="receipt_share_button">Share my week 🧾</string>
+    <string name="receipt_share_hint">Drop it on your story — it reps Pact 🛡</string>
+    <string name="receipt_caption">My week on Pact 🛡 — staying off the doomscroll with my squad. Join me.</string>
+    <string name="notif_receipt_title">Your week is ready 🧾</string>
+    <string name="notif_receipt_body">See your Pact receipt and share it with the squad.</string>
+
     <!-- challenges &amp; leaderboard -->
     <string name="challenges_title">Challenges</string>
     <string name="leaderboard_you">You</string>

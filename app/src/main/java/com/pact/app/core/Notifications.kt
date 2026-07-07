@@ -124,6 +124,26 @@ object Notifications {
         context.getSystemService(NotificationManager::class.java).cancel(pkg.hashCode())
     }
 
+    /** The Sunday "your week is ready" nudge toward the receipt. */
+    fun showWeeklyReceipt(context: Context) {
+        if (!canPost(context)) return
+        if (!PactState.get(context).snapshot.value.setupComplete) return
+        ensureChannels(context)
+        val open = PendingIntent.getActivity(
+            context, 7,
+            context.packageManager.getLaunchIntentForPackage(context.packageName),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+        val notification = NotificationCompat.Builder(context, CHANNEL_SHIELD)
+            .setSmallIcon(R.drawable.ic_notif_shield)
+            .setContentTitle(context.getString(R.string.notif_receipt_title))
+            .setContentText(context.getString(R.string.notif_receipt_body))
+            .setContentIntent(open)
+            .setAutoCancel(true)
+            .build()
+        context.getSystemService(NotificationManager::class.java).notify(7, notification)
+    }
+
     fun showShieldDown(context: Context) {
         if (!canPost(context)) return
         if (!PactState.get(context).snapshot.value.setupComplete) return

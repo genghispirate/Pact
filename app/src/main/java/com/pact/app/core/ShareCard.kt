@@ -33,16 +33,30 @@ object ShareCard {
         val partySize: Int? = null,
     )
 
-    fun share(context: Context, data: Data) {
-        val bitmap = render(context, data)
+    /** One week's numbers, for the shareable "receipt". */
+    data class ReceiptData(
+        val streakDays: Int,
+        val interventions: Int,
+        val walkaways: Int,
+        val squadDenied: Int,
+        val towerLevel: Int,
+    )
+
+    fun share(context: Context, data: Data) =
+        emit(context, render(context, data), context.getString(R.string.share_caption))
+
+    fun shareReceipt(context: Context, data: ReceiptData) =
+        emit(context, renderReceipt(context, data), context.getString(R.string.receipt_caption))
+
+    private fun emit(context: Context, bitmap: Bitmap, caption: String) {
         val dir = File(context.cacheDir, "shared").apply { mkdirs() }
-        val file = File(dir, "pact-streak.png")
+        val file = File(dir, "pact-card.png")
         file.outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
         val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
         val intent = Intent(Intent.ACTION_SEND).apply {
             type = "image/png"
             putExtra(Intent.EXTRA_STREAM, uri)
-            putExtra(Intent.EXTRA_TEXT, context.getString(R.string.share_caption))
+            putExtra(Intent.EXTRA_TEXT, caption)
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
@@ -50,6 +64,56 @@ object ShareCard {
             Intent.createChooser(intent, context.getString(R.string.share_sheet_title))
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         )
+    }
+
+    private fun renderReceipt(context: Context, data: ReceiptData): Bitmap {
+        val bitmap = Bitmap.createBitmap(W, H, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        val bg = Paint().apply {
+            shader = LinearGradient(0f, 0f, W.toFloat(), H.toFloat(),
+                intArrayOf(0xFF1A1A1A.toInt(), 0xFF0F0F0F.toInt()), null, Shader.TileMode.CLAMP)
+        }
+        canvas.drawRect(0f, 0f, W.toFloat(), H.toFloat(), bg)
+
+        val mono = Typeface.create(Typeface.MONOSPACE, Typeface.BOLD)
+        val lime = 0xFFCCFF00.toInt()
+        val white = 0xFFF5F5F5.toInt()
+        val dim = 0xFF6A6A6A.toInt()
+
+        text(canvas, context.getString(R.string.app_name).uppercase(), W / 2f, 210f, 64f, white, mono, spacing = 0.25f)
+        text(canvas, context.getString(R.string.receipt_title), W / 2f, 285f, 40f, lime, mono, spacing = 0.2f)
+        dashed(canvas, 330f, dim)
+
+        var y = 470f
+        val items = listOf(
+            context.getString(R.string.receipt_streak) to "${data.streakDays}",
+            context.getString(R.string.receipt_interventions) to "${data.interventions}",
+            context.getString(R.string.receipt_walkaways) to "${data.walkaways}",
+            context.getString(R.string.receipt_denied) to "${data.squadDenied}",
+            context.getString(R.string.receipt_tower) to "LV ${data.towerLevel}",
+        )
+        for ((label, value) in items) {
+            line(canvas, label.uppercase(), value, y, mono, white, lime)
+            y += 130f
+        }
+        dashed(canvas, y + 10f, dim)
+        text(canvas, context.getString(R.string.receipt_footer), W / 2f, H - 110f, 40f, dim, mono, spacing = 0.15f)
+        return bitmap
+    }
+
+    private fun dashed(canvas: Canvas, y: Float, color: Int) {
+        val p = Paint().apply {
+            this.color = color; strokeWidth = 3f
+            pathEffect = android.graphics.DashPathEffect(floatArrayOf(16f, 14f), 0f)
+        }
+        canvas.drawLine(90f, y, W - 90f, y, p)
+    }
+
+    private fun line(canvas: Canvas, label: String, value: String, y: Float, tf: Typeface, labelColor: Int, valueColor: Int) {
+        val l = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = labelColor; textSize = 46f; typeface = tf; textAlign = Paint.Align.LEFT }
+        val v = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = valueColor; textSize = 58f; typeface = tf; textAlign = Paint.Align.RIGHT }
+        canvas.drawText(label, 100f, y, l)
+        canvas.drawText(value, W - 100f, y, v)
     }
 
     private fun render(context: Context, data: Data): Bitmap {

@@ -41,6 +41,7 @@ import com.pact.app.ui.CircleScreen
 import com.pact.app.ui.HomeScreen
 import com.pact.app.ui.OnboardingFlow
 import com.pact.app.ui.PactButton
+import com.pact.app.ui.ReceiptsScreen
 import com.pact.app.ui.SettingsScreen
 import com.pact.app.ui.StatsScreen
 import com.pact.app.ui.TrustedHome
@@ -96,7 +97,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-private enum class Screen { Home, AddApps, Settings, Stats, Circle, Chat, Challenges }
+private enum class Screen { Home, AddApps, Settings, Stats, Circle, Chat, Challenges, Receipts }
 
 @Composable
 private fun PactApp(state: PactState) {
@@ -130,10 +131,15 @@ private fun PactApp(state: PactState) {
             onOpenStats = { screen = Screen.Stats },
             onOpenCircle = { screen = Screen.Circle },
             onOpenChallenges = { screen = Screen.Challenges },
+            onOpenReceipts = { screen = Screen.Receipts },
         )
         Screen.Challenges -> {
             BackHandler { screen = Screen.Home }
             ChallengesScreen(state = state, onBack = { screen = Screen.Home })
+        }
+        Screen.Receipts -> {
+            BackHandler { screen = Screen.Home }
+            ReceiptsScreen(state = state, onBack = { screen = Screen.Home })
         }
         Screen.AddApps -> AddAppsScreen(
             state = state,

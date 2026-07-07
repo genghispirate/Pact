@@ -3,6 +3,7 @@ package com.pact.app
 import android.app.Application
 import com.pact.app.core.Notifications
 import com.pact.app.core.PactState
+import com.pact.app.core.ReceiptWorker
 import com.pact.app.core.SyncWorker
 import com.pact.app.core.TrustNetwork
 import kotlinx.coroutines.CoroutineScope
@@ -28,6 +29,7 @@ class PactApp : Application() {
         }
 
         SyncWorker.schedule(this)
+        ReceiptWorker.schedule(this)
     }
 
     /**
