@@ -74,6 +74,14 @@ class TrustNetwork private constructor(context: Context) {
             refresh()
         }
 
+    /** The glossy emoji the user picked as their face. Shown all over the squad UI. */
+    var myAvatar: String
+        get() = prefs.getString(KEY_MY_AVATAR, "🐺") ?: "🐺"
+        set(value) {
+            prefs.edit().putString(KEY_MY_AVATAR, value).apply()
+            refresh()
+        }
+
     // ---------------------------------------------------------------- model
 
     enum class Direction { SUPPORTER, WARD }
@@ -90,8 +98,12 @@ class TrustNetwork private constructor(context: Context) {
         val direction: Direction,
         val canApprove: Boolean = true,
         val canViewStats: Boolean = false,
+        val avatar: String = "",
         val addedAt: Long = System.currentTimeMillis(),
-    )
+    ) {
+        /** Their chosen emoji, or a stable fun one derived from their key. */
+        val face: String get() = avatar.ifBlank { AVATARS[(id.hashCode() and 0x7fffffff) % AVATARS.size] }
+    }
 
     data class ChatMessage(
         val id: String,
@@ -207,6 +219,7 @@ class TrustNetwork private constructor(context: Context) {
             "&s=" + B64.encode(identity.signPublic) +
             "&b=" + B64.encode(identity.boxPublic) +
             "&i=" + myInbox +
+            "&a=" + android.net.Uri.encode(myAvatar) +
             "&t=" + android.net.Uri.encode(token)
     }
 
@@ -219,10 +232,11 @@ class TrustNetwork private constructor(context: Context) {
         val box = uri.getQueryParameter("b") ?: return null
         val inbox = uri.getQueryParameter("i") ?: return null
         val token = uri.getQueryParameter("t") ?: return null
+        val avatar = uri.getQueryParameter("a") ?: ""
         runCatching { require(B64.decode(sign).size == 32 && B64.decode(box).size == 32) }
             .getOrNull() ?: return null
 
-        val ward = Contact(sign, name, box, inbox, Direction.WARD)
+        val ward = Contact(sign, name, box, inbox, Direction.WARD, avatar = avatar)
         upsertContact(ward)
 
         val body = JSONObject()
@@ -230,6 +244,7 @@ class TrustNetwork private constructor(context: Context) {
             .put("name", myName.ifBlank { "A trusted person" })
             .put("box", B64.encode(identity.boxPublic))
             .put("inbox", myInbox)
+            .put("avatar", myAvatar)
         sendPayload(Wire.TYPE_PAIR_ACCEPT, UUID.randomUUID().toString(), body, Wire.MESSAGE_TTL_MILLIS, ward)
         return ward
     }
@@ -254,6 +269,7 @@ class TrustNetwork private constructor(context: Context) {
             .put("s", B64.encode(identity.signPublic))
             .put("b", B64.encode(identity.boxPublic))
             .put("i", myInbox)
+            .put("a", myAvatar)
             .put("t", token)
         val sealed = Backup.encrypt(bundle.toString(), code.toCharArray())
         scope.launch { runCatching { transport.send(pairTopic(code), sealed) } }
@@ -278,6 +294,7 @@ class TrustNetwork private constructor(context: Context) {
                 "&s=" + o.optString("s") +
                 "&b=" + o.optString("b") +
                 "&i=" + o.optString("i") +
+                "&a=" + android.net.Uri.encode(o.optString("a")) +
                 "&t=" + android.net.Uri.encode(o.optString("t"))
             acceptPairing(uri)?.let { return it }
         }
@@ -697,6 +714,7 @@ class TrustNetwork private constructor(context: Context) {
             boxPublic = payload.body.optString("box"),
             inbox = payload.body.optString("inbox"),
             direction = Direction.SUPPORTER,
+            avatar = payload.body.optString("avatar"),
         )
         if (contact.boxPublic.isEmpty() || contact.inbox.isEmpty()) return
         upsertContact(contact)
@@ -863,6 +881,7 @@ class TrustNetwork private constructor(context: Context) {
                 direction = Direction.valueOf(o.getString("dir")),
                 canApprove = o.optBoolean("approve", true),
                 canViewStats = o.optBoolean("stats", false),
+                avatar = o.optString("av"),
                 addedAt = o.optLong("at"),
             )
         }
@@ -874,7 +893,8 @@ class TrustNetwork private constructor(context: Context) {
             arr.put(
                 JSONObject().put("id", c.id).put("name", c.name).put("box", c.boxPublic)
                     .put("inbox", c.inbox).put("dir", c.direction.name)
-                    .put("approve", c.canApprove).put("stats", c.canViewStats).put("at", c.addedAt)
+                    .put("approve", c.canApprove).put("stats", c.canViewStats)
+                    .put("av", c.avatar).put("at", c.addedAt)
             )
         }
         prefs.edit().putString(KEY_CONTACTS, arr.toString()).apply()
@@ -1022,9 +1042,13 @@ class TrustNetwork private constructor(context: Context) {
         private const val PAIR_ALPHABET = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"
         private const val PAIR_CODE_LEN = 10
 
+        /** The glossy emoji faces users pick from; also used to auto-assign one per contact. */
+        val AVATARS = listOf("🐺", "👽", "👻", "🦊", "🐉", "🔥", "🌙", "🦁", "🐼", "🤖", "🐸", "🦄")
+
         private const val KEY_IDENTITY = "identity"
         private const val KEY_INBOX = "inbox"
         private const val KEY_MY_NAME = "my_name"
+        private const val KEY_MY_AVATAR = "my_avatar"
         private const val KEY_CONTACTS = "contacts"
         private const val KEY_MESSAGES = "messages"
         private const val KEY_REQUESTS = "requests"

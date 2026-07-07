@@ -60,6 +60,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import com.pact.app.R
 import com.pact.app.core.Apps
@@ -176,6 +177,20 @@ fun HomeScreen(
                         )
                     },
                 )
+            }
+
+            // squad: the co-op tower + everyone's streaks
+            if (hasCircle) {
+                item {
+                    SquadTowerCard(
+                        myFace = network.myAvatar,
+                        myName = netSnap.myName.ifBlank { stringResource(R.string.leaderboard_you) },
+                        myStreak = snapshot.streakDays(now),
+                        supporters = netSnap.supporters(),
+                        peerStats = netSnap.peerStats,
+                        onOpen = onOpenChallenges,
+                    )
+                }
             }
 
             // focus session: active banner, or the invitation to start one
@@ -580,6 +595,102 @@ private fun TierOption(
             Text(title, style = MaterialTheme.typography.titleSmall)
             Text(body, style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
         }
+    }
+}
+
+/**
+ * The Squad Hub centrepiece: a co-op tower that grows with everyone's combined
+ * streak, plus a row of glossy avatar faces and their fire counts.
+ */
+@Composable
+private fun SquadTowerCard(
+    myFace: String,
+    myName: String,
+    myStreak: Int,
+    supporters: List<TrustNetwork.Contact>,
+    peerStats: Map<String, TrustNetwork.PeerStats>,
+    onOpen: () -> Unit,
+) {
+    val teamStreak = myStreak + supporters.sumOf { peerStats[it.id]?.streakDays ?: 0 }
+    val level = teamStreak.coerceIn(0, 12)
+    val shape = RoundedCornerShape(18.dp)
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(shape)
+            .background(Surface1)
+            .border(1.5.dp, CardBorder, shape)
+            .clickable(onClick = onOpen)
+            .padding(18.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Text(stringResource(R.string.squad_tower_label), style = MaterialTheme.typography.labelMedium, color = TextTertiary)
+                Spacer(Modifier.height(2.dp))
+                Row(verticalAlignment = Alignment.Bottom) {
+                    Text("$teamStreak", style = MaterialTheme.typography.displaySmall, color = Periwinkle)
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        stringResource(R.string.squad_streak_unit),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = TextSecondary,
+                        modifier = Modifier.padding(bottom = 6.dp),
+                    )
+                }
+            }
+            // the tower: blocks stack upward, glowing lime
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(3.dp),
+            ) {
+                val blocks = level.coerceIn(1, 6)
+                repeat(blocks) { i ->
+                    val fromTop = i
+                    Box(
+                        modifier = Modifier
+                            .width((26 + fromTop * 5).dp)
+                            .height(10.dp)
+                            .clip(RoundedCornerShape(3.dp))
+                            .background(Periwinkle.copy(alpha = 0.55f + 0.45f * (fromTop.toFloat() / blocks)))
+                    )
+                }
+            }
+        }
+        Spacer(Modifier.height(16.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+            AvatarBubble(face = myFace, name = myName, streak = myStreak, me = true)
+            supporters.take(4).forEach { c ->
+                AvatarBubble(face = c.face, name = c.name, streak = peerStats[c.id]?.streakDays)
+            }
+        }
+    }
+}
+
+@Composable
+private fun AvatarBubble(face: String, name: String, streak: Int?, me: Boolean = false) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Box(
+            modifier = Modifier
+                .size(46.dp)
+                .clip(CircleShape)
+                .background(Surface2)
+                .border(if (me) 2.dp else 1.dp, if (me) Periwinkle else CardBorder, CircleShape),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(face, fontSize = 24.sp)
+        }
+        Spacer(Modifier.height(4.dp))
+        Text(
+            name.take(8),
+            style = MaterialTheme.typography.labelMedium,
+            color = if (me) Periwinkle else TextSecondary,
+            maxLines = 1,
+        )
+        Text(
+            if (streak != null) "🔥$streak" else "·",
+            style = MaterialTheme.typography.labelMedium,
+            color = TextTertiary,
+        )
     }
 }
 

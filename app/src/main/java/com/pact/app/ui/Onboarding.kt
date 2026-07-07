@@ -64,6 +64,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.pact.app.R
 import com.pact.app.core.PactState
 import com.pact.app.core.Qr
@@ -342,6 +343,7 @@ private fun UserSetupFlow(state: PactState, onDone: () -> Unit) {
     val network = remember { TrustNetwork.get(context) }
     var step by remember { mutableIntStateOf(0) }
     var myName by remember { mutableStateOf(network.myName) }
+    var avatar by remember { mutableStateOf(network.myAvatar) }
     var selectedApps by remember { mutableStateOf(setOf<String>()) }
     var limits by remember { mutableStateOf(mapOf<String, Int>()) }
 
@@ -370,8 +372,11 @@ private fun UserSetupFlow(state: PactState, onDone: () -> Unit) {
                 0 -> MyNameStep(
                     name = myName,
                     onNameChange = { myName = it },
+                    avatar = avatar,
+                    onAvatarChange = { avatar = it },
                     onNext = {
                         network.myName = myName
+                        network.myAvatar = avatar
                         step = 1
                     },
                 )
@@ -538,14 +543,35 @@ private fun StepScaffold(
 }
 
 @Composable
-private fun MyNameStep(name: String, onNameChange: (String) -> Unit, onNext: () -> Unit) {
+private fun MyNameStep(
+    name: String,
+    onNameChange: (String) -> Unit,
+    avatar: String,
+    onAvatarChange: (String) -> Unit,
+    onNext: () -> Unit,
+) {
     StepScaffold(
         title = stringResource(R.string.circle_your_name_title),
         subtitle = stringResource(R.string.circle_your_name_body),
     ) {
+        // The chosen face, big and glossy.
+        Box(
+            modifier = Modifier
+                .size(96.dp)
+                .clip(CircleShape)
+                .background(Surface1)
+                .border(2.dp, Periwinkle, CircleShape),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(avatar, fontSize = 52.sp)
+        }
+        Spacer(Modifier.height(18.dp))
+        // Avatar palette.
+        AvatarGrid(selected = avatar, onSelect = onAvatarChange)
+        Spacer(Modifier.height(22.dp))
         OutlinedTextField(
             value = name,
-            onValueChange = onNameChange,
+            onValueChange = { onNameChange(it.take(16)) },
             label = { Text(stringResource(R.string.my_name_label)) },
             singleLine = true,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
@@ -559,13 +585,38 @@ private fun MyNameStep(name: String, onNameChange: (String) -> Unit, onNext: () 
                 unfocusedBorderColor = Surface2,
             ),
         )
-        Spacer(Modifier.height(28.dp))
+        Spacer(Modifier.height(24.dp))
         PactButton(
             stringResource(R.string.common_continue),
             onClick = onNext,
             enabled = name.trim().length >= 2,
             modifier = Modifier.fillMaxWidth(),
         )
+    }
+}
+
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+@Composable
+private fun AvatarGrid(selected: String, onSelect: (String) -> Unit) {
+    androidx.compose.foundation.layout.FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        TrustNetwork.AVATARS.forEach { emoji ->
+            val on = emoji == selected
+            Box(
+                modifier = Modifier
+                    .size(52.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(if (on) Periwinkle.copy(alpha = 0.16f) else Surface1)
+                    .border(if (on) 2.dp else 1.dp, if (on) Periwinkle else com.pact.app.ui.theme.CardBorder, RoundedCornerShape(14.dp))
+                    .clickable { onSelect(emoji) },
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(emoji, fontSize = 28.sp)
+            }
+        }
     }
 }
 

@@ -54,6 +54,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.pact.app.R
 import com.pact.app.core.PactState
 import com.pact.app.core.TrustNetwork
@@ -333,7 +334,7 @@ fun TrustedHome(state: PactState, onOpenChat: (String) -> Unit) {
                         .clickable { onOpenChat(ward.id) }
                         .padding(16.dp),
                 ) {
-                    NameBubble(ward.name)
+                    NameBubble(ward.name, face = ward.face)
                     Spacer(Modifier.width(14.dp))
                     Column(Modifier.weight(1f)) {
                         Text(ward.name, style = MaterialTheme.typography.titleMedium)
@@ -383,7 +384,7 @@ fun TrustedHome(state: PactState, onOpenChat: (String) -> Unit) {
 }
 
 @Composable
-fun NameBubble(name: String, sizeDp: Int = 44) {
+fun NameBubble(name: String, face: String? = null, sizeDp: Int = 44) {
     Box(
         modifier = Modifier
             .size(sizeDp.dp)
@@ -391,11 +392,15 @@ fun NameBubble(name: String, sizeDp: Int = 44) {
             .background(Surface2),
         contentAlignment = Alignment.Center,
     ) {
-        Text(
-            name.trim().take(1).uppercase(),
-            style = MaterialTheme.typography.titleMedium,
-            color = Periwinkle,
-        )
+        if (!face.isNullOrBlank()) {
+            Text(face, fontSize = (sizeDp * 0.52f).sp)
+        } else {
+            Text(
+                name.trim().take(1).uppercase(),
+                style = MaterialTheme.typography.titleMedium,
+                color = Periwinkle,
+            )
+        }
     }
 }
 

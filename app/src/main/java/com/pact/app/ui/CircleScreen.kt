@@ -169,7 +169,7 @@ fun CircleScreen(
                         .clickable { editing = contact }
                         .padding(16.dp),
                 ) {
-                    NameBubble(contact.name)
+                    NameBubble(contact.name, face = contact.face)
                     Spacer(Modifier.width(14.dp))
                     Column(Modifier.weight(1f)) {
                         Text(contact.name, style = MaterialTheme.typography.titleMedium)

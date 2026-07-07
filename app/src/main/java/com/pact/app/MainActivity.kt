@@ -49,6 +49,10 @@ import com.pact.app.ui.theme.TextSecondary
 
 class MainActivity : ComponentActivity() {
 
+    override fun attachBaseContext(newBase: android.content.Context) {
+        super.attachBaseContext(com.pact.app.core.LocaleHelper.wrap(newBase))
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -60,7 +64,14 @@ class MainActivity : ComponentActivity() {
                         .fillMaxSize()
                         .background(MaterialTheme.colorScheme.background)
                 ) {
-                    PactApp(state)
+                    if (!com.pact.app.core.LocaleHelper.hasChosen(this@MainActivity)) {
+                        com.pact.app.ui.LanguageScreen(onPick = { tag ->
+                            com.pact.app.core.LocaleHelper.set(this@MainActivity, tag)
+                            recreate()
+                        })
+                    } else {
+                        PactApp(state)
+                    }
                 }
             }
         }

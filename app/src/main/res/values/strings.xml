@@ -15,16 +15,16 @@
     <string name="common_skip">Skip</string>
 
     <!-- intro -->
-    <string name="intro_page1_title">Lock what pulls you in</string>
-    <string name="intro_page1_body">Pact quietly blocks the apps you can\'t put down — Instagram, TikTok, YouTube, whatever it is for you. They stay closed until you\'re let back in.</string>
-    <string name="intro_page2_title">A circle, not a password</string>
-    <string name="intro_page2_body">You choose the people you trust — a partner, a parent, a friend. When you want back in, you ask them, and they decide. Willpower stops being the weak link.</string>
-    <string name="intro_page3_title">Private by design</string>
-    <string name="intro_page3_body">No account, no sign-up, nothing to configure. Every request and message is end-to-end encrypted — nobody in between can read a thing, not even us.</string>
+    <string name="intro_page1_title">Limits that actually work</string>
+    <string name="intro_page1_body">Screen-time limits are easy to ignore. Pact gives each app a daily budget — and when it\'s up, the app actually locks. 📱➡️🗑️</string>
+    <string name="intro_page2_title">Build your squad</string>
+    <string name="intro_page2_body">Lock each other out of the doomscroll. Want more time? Ask your squad — they hold the key, not your willpower. 👯➡️🔒</string>
+    <string name="intro_page3_title">No accounts. Pure privacy.</string>
+    <string name="intro_page3_body">No email, no password, no servers. Everything is end-to-end encrypted — nobody in between can read a thing, not even us. 🚀</string>
     <string name="intro_welcome_title">Meet Pact</string>
     <string name="intro_welcome_body">A calmer relationship with your phone, held together by the people who care about you.</string>
     <string name="intro_welcome_cta">Get started</string>
-    <string name="intro_get_started">Get started</string>
+    <string name="intro_get_started">Let\'s go</string>
 
     <!-- role select -->
     <string name="role_title">Who\'s setting up this phone?</string>
@@ -86,8 +86,8 @@
     <string name="home_with">with %1$s</string>
     <string name="home_add_apps">Add apps</string>
     <string name="home_settings">Settings</string>
-    <string name="hero_active_title">Protection is on</string>
-    <string name="hero_active_sub">Your Pact is holding steady</string>
+    <string name="hero_active_title">System armed</string>
+    <string name="hero_active_sub">Your squad has your back</string>
     <string name="hero_down_title">The shield is off</string>
     <string name="hero_down_sub">Nothing is being blocked right now. Turn the shield back on in accessibility settings.</string>
     <string name="hero_enable">Turn the shield on</string>
@@ -142,7 +142,10 @@
     <string name="limit_h_m">%1$dh %2$dm</string>
     <string name="limits_step_title">Set your daily limits</string>
     <string name="limits_step_body">You don\'t have to quit — just set how long each app gets per day. Slide to the left for a hard lock.</string>
-    <string name="wall_limit_reached">You\'ve used your %1$d minutes for today.</string>
+    <string name="wall_limit_reached">That\'s your %1$d min for today. Brain rot incoming 🧠</string>
+
+    <string name="squad_tower_label">SQUAD TOWER</string>
+    <string name="squad_streak_unit">🔥 team streak</string>
 
     <!-- challenges &amp; leaderboard -->
     <string name="challenges_title">Challenges</string>
@@ -206,7 +209,7 @@
     <string name="wall_locked_title">%1$s is locked</string>
     <string name="wall_ask">Ask %1$s for the current code</string>
     <string name="wall_accepted">Code accepted. How long do you need?</string>
-    <string name="wall_go_home">Never mind — take me home</string>
+    <string name="wall_go_home">Close app</string>
     <string name="cd_delete">Delete</string>
     <string name="cd_locked">Locked</string>
     <string-array name="encouragements">
@@ -370,8 +373,8 @@
     <string name="circle_title">Your circle</string>
     <string name="circle_step_title">Build your circle</string>
     <string name="circle_step_body">Your circle is the people who hold your locks — a partner, a parent, a close friend. When you want back in, they decide. Have them install Pact, choose “I\'m a trusted person”, and scan this code.</string>
-    <string name="circle_your_name_title">What\'s your name?</string>
-    <string name="circle_your_name_body">Your circle sees this name on requests and messages.</string>
+    <string name="circle_your_name_title">Who are you?</string>
+    <string name="circle_your_name_body">Pick a face and a handle. Your squad sees this.</string>
     <string name="my_name_label">Your name</string>
     <string name="circle_joined">%1$s joined your circle</string>
     <string name="circle_waiting">Waiting for someone to scan…</string>
@@ -405,10 +408,10 @@
     <string name="contact_remove_note">Removing someone needs your circle\'s approval — that\'s the point.</string>
 
     <!-- requests -->
-    <string name="request_ask">Ask your circle</string>
+    <string name="request_ask">Ask your squad</string>
     <string name="request_how_long">How much time?</string>
     <string name="request_why">Why? (they\'ll see this)</string>
-    <string name="request_send">Send request</string>
+    <string name="request_send">Ask squad 🔑</string>
     <string name="request_sent">Request sent</string>
     <string name="request_waiting">Your circle has been asked. You can wait here or walk away — if they say yes, the time starts automatically.</string>
     <string name="request_expires_in">Request expires in %1$s</string>

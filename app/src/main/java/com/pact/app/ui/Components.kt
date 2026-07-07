@@ -77,7 +77,7 @@ fun formatCountdown(millis: Long): String {
     }
 }
 
-/** Primary action: the signature gradient pill. Tonal variant for secondary actions. */
+/** Primary action: a loud, solid electric-lime pill. Tonal variant for secondary actions. */
 @Composable
 fun PactButton(
     text: String,
@@ -86,7 +86,7 @@ fun PactButton(
     enabled: Boolean = true,
     tonal: Boolean = false,
 ) {
-    val shape = RoundedCornerShape(18.dp)
+    val shape = RoundedCornerShape(16.dp)
     Box(
         modifier = modifier
             .height(56.dp)
@@ -94,8 +94,9 @@ fun PactButton(
             .then(
                 if (tonal) Modifier
                     .background(Surface2)
-                    .border(1.dp, CardBorder, shape)
-                else Modifier.background(PactGradient)
+                    .border(1.5.dp, CardBorder, shape)
+                else Modifier
+                    .background(com.pact.app.ui.theme.Periwinkle)
             )
             .alpha(if (enabled) 1f else 0.4f)
             .clickable(enabled = enabled, onClick = onClick),
@@ -210,13 +211,13 @@ fun PactCard(
     background: Color = Surface1,
     content: @Composable androidx.compose.foundation.layout.ColumnScope.() -> Unit,
 ) {
-    val shape = RoundedCornerShape(24.dp)
+    val shape = RoundedCornerShape(18.dp)
     Column(
         modifier = modifier
             .fillMaxWidth()
             .clip(shape)
             .background(background)
-            .border(1.dp, CardBorder, shape)
+            .border(1.5.dp, CardBorder, shape)
             .padding(20.dp),
         content = content,
     )

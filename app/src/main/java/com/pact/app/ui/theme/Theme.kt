@@ -10,39 +10,68 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.pact.app.R
 
-// Pact is deliberately dark-only: calm, low-stimulation, consistent.
-// v1.1 palette: deeper space-blue base, higher-contrast surfaces, and an
-// indigo→violet signature gradient used for primary actions and the brand.
+// ─────────────────────────────────────────────────────────────────────────
+// v5.3 look: "Neo-Brutalism × Tokyo Nightmode." Deep obsidian, one loud
+// positive (electric lime), a social lavender, and a hard stop (coral).
+// High contrast, sharp-ish edges, heavy type. Names are kept from earlier
+// versions so the whole app re-skins by changing these values in one place.
+// ─────────────────────────────────────────────────────────────────────────
 
-val Ink = Color(0xFF070A14)
-val Surface1 = Color(0xFF141A2E)
-val Surface2 = Color(0xFF1E2742)
-val Surface3 = Color(0xFF2A3554)
-val CardBorder = Color(0x14FFFFFF)      // 8% white hairline on cards
-val Periwinkle = Color(0xFFA5B8FF)
-val Violet = Color(0xFF8E7CFF)
-val VioletDeep = Color(0xFF6C5CE7)
-val Mint = Color(0xFF5EEAD4)
-val Amber = Color(0xFFFFC97E)
-val Rose = Color(0xFFFF8093)
-val TextPrimary = Color(0xFFF2F5FF)
-val TextSecondary = Color(0xFFAAB4D4)
-val TextTertiary = Color(0xFF7C87AB)
+val Ink = Color(0xFF0F0F0F)             // Deep Obsidian — app background
+val Surface1 = Color(0xFF1A1A1A)        // Matte Charcoal — cards
+val Surface2 = Color(0xFF242424)        // raised charcoal
+val Surface3 = Color(0xFF2E2E2E)        // pressed / chips
+val CardBorder = Color(0x1FFFFFFF)      // ~12% white — brutalist hairline
 
-/** Signature gradient — buttons, brand marks, highlights. */
+// Electric Lime — the one "go / positive / primary" colour.
+val Periwinkle = Color(0xFFCCFF00)
+val Mint = Color(0xFFCCFF00)            // success reads as the same "go"
+// Digital Lavender — social, chat, secondary.
+val Violet = Color(0xFFB19CD9)
+val VioletDeep = Color(0xFF8B7BC0)
+// Neon Coral — stop / warning.
+val Rose = Color(0xFFFF6B6B)
+val Amber = Color(0xFFFFC24D)           // caution (distinct from the coral stop)
+
+val TextPrimary = Color(0xFFF5F5F5)
+val TextSecondary = Color(0xFF9A9A9A)
+val TextTertiary = Color(0xFF5E5E5E)
+
+/** Signature gradient — used sparingly for brand marks and selected chips. */
 val PactGradient = Brush.linearGradient(listOf(Periwinkle, Violet))
 val PactGradientDeep = Brush.linearGradient(listOf(Violet, VioletDeep))
+
+// ─────────────────────────────────── type: Space Grotesk (display) + Inter
+
+@OptIn(androidx.compose.ui.text.ExperimentalTextApi::class)
+private fun grotesk(weight: Int) = Font(
+    R.font.space_grotesk, FontWeight(weight),
+    variationSettings = FontVariation.Settings(FontVariation.weight(weight)),
+)
+
+@OptIn(androidx.compose.ui.text.ExperimentalTextApi::class)
+private fun inter(weight: Int) = Font(
+    R.font.inter, FontWeight(weight),
+    variationSettings = FontVariation.Settings(FontVariation.weight(weight)),
+)
+
+val SpaceGrotesk = FontFamily(grotesk(500), grotesk(600), grotesk(700))
+val Inter = FontFamily(inter(400), inter(500), inter(600), inter(700))
 
 private val PactColors = darkColorScheme(
     primary = Periwinkle,
     onPrimary = Ink,
     primaryContainer = Surface3,
     onPrimaryContainer = TextPrimary,
-    secondary = Mint,
+    secondary = Violet,
     onSecondary = Ink,
     background = Ink,
     onBackground = TextPrimary,
@@ -50,54 +79,55 @@ private val PactColors = darkColorScheme(
     onSurface = TextPrimary,
     surfaceVariant = Surface2,
     onSurfaceVariant = TextSecondary,
-    outline = Color(0xFF3A4568),
+    outline = Color(0xFF3A3A3A),
     error = Rose,
     onError = Ink,
 )
 
 private val PactTypography = Typography(
     displaySmall = TextStyle(
-        fontSize = 36.sp, lineHeight = 42.sp,
-        fontWeight = FontWeight.ExtraBold, letterSpacing = (-0.8).sp
+        fontFamily = SpaceGrotesk, fontSize = 38.sp, lineHeight = 42.sp,
+        fontWeight = FontWeight(700), letterSpacing = (-1.0).sp
     ),
     headlineMedium = TextStyle(
-        fontSize = 28.sp, lineHeight = 34.sp,
-        fontWeight = FontWeight.Bold, letterSpacing = (-0.5).sp
+        fontFamily = SpaceGrotesk, fontSize = 30.sp, lineHeight = 34.sp,
+        fontWeight = FontWeight(700), letterSpacing = (-0.8).sp
     ),
     headlineSmall = TextStyle(
-        fontSize = 22.sp, lineHeight = 28.sp,
-        fontWeight = FontWeight.Bold, letterSpacing = (-0.3).sp
+        fontFamily = SpaceGrotesk, fontSize = 23.sp, lineHeight = 28.sp,
+        fontWeight = FontWeight(700), letterSpacing = (-0.5).sp
     ),
     titleMedium = TextStyle(
-        fontSize = 18.sp, lineHeight = 25.sp,
-        fontWeight = FontWeight.SemiBold, letterSpacing = 0.sp
+        fontFamily = SpaceGrotesk, fontSize = 18.sp, lineHeight = 24.sp,
+        fontWeight = FontWeight(600), letterSpacing = (-0.2).sp
     ),
     titleSmall = TextStyle(
-        fontSize = 16.sp, lineHeight = 22.sp,
-        fontWeight = FontWeight.SemiBold, letterSpacing = 0.sp
+        fontFamily = SpaceGrotesk, fontSize = 16.sp, lineHeight = 22.sp,
+        fontWeight = FontWeight(600), letterSpacing = 0.sp
     ),
     bodyLarge = TextStyle(
-        fontSize = 16.sp, lineHeight = 25.sp, fontWeight = FontWeight.Normal
+        fontFamily = Inter, fontSize = 16.sp, lineHeight = 24.sp, fontWeight = FontWeight(400)
     ),
     bodyMedium = TextStyle(
-        fontSize = 14.5.sp, lineHeight = 22.sp, fontWeight = FontWeight.Normal
+        fontFamily = Inter, fontSize = 14.5.sp, lineHeight = 21.sp, fontWeight = FontWeight(400)
     ),
     labelLarge = TextStyle(
-        fontSize = 16.sp, lineHeight = 21.sp,
-        fontWeight = FontWeight.Bold, letterSpacing = 0.2.sp
+        fontFamily = SpaceGrotesk, fontSize = 16.sp, lineHeight = 20.sp,
+        fontWeight = FontWeight(700), letterSpacing = 0.3.sp
     ),
     labelMedium = TextStyle(
-        fontSize = 12.sp, lineHeight = 16.sp,
-        fontWeight = FontWeight.SemiBold, letterSpacing = 0.8.sp
+        fontFamily = Inter, fontSize = 12.sp, lineHeight = 16.sp,
+        fontWeight = FontWeight(600), letterSpacing = 0.6.sp
     ),
 )
 
+// Sharper than before — brutalist, but not literally square (keeps it modern).
 private val PactShapes = Shapes(
-    extraSmall = RoundedCornerShape(10.dp),
-    small = RoundedCornerShape(14.dp),
-    medium = RoundedCornerShape(20.dp),
-    large = RoundedCornerShape(26.dp),
-    extraLarge = RoundedCornerShape(34.dp),
+    extraSmall = RoundedCornerShape(8.dp),
+    small = RoundedCornerShape(10.dp),
+    medium = RoundedCornerShape(14.dp),
+    large = RoundedCornerShape(18.dp),
+    extraLarge = RoundedCornerShape(24.dp),
 )
 
 @Composable
