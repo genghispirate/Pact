@@ -1,0 +1,450 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Pact</string>
+    <string name="accessibility_service_label">Pact app shield</string>
+    <string name="accessibility_service_description">Pact uses this permission for exactly one thing: noticing when a locked app comes to the front so it can show the lock screen. It never reads what\'s on your screen, collects nothing, and works entirely offline.</string>
+
+    <!-- common -->
+    <string name="common_continue">Continue</string>
+    <string name="common_cancel">Cancel</string>
+    <string name="common_close">Close</string>
+    <string name="common_done">Done</string>
+    <string name="common_next">Next</string>
+    <string name="common_back">Back</string>
+    <string name="common_remove">Remove</string>
+    <string name="common_skip">Skip</string>
+
+    <!-- intro -->
+    <string name="intro_page1_title">Lock what pulls you in</string>
+    <string name="intro_page1_body">Pact quietly blocks the apps you can\'t put down — Instagram, TikTok, YouTube, whatever it is for you. They stay closed until you\'re let back in.</string>
+    <string name="intro_page2_title">A circle, not a password</string>
+    <string name="intro_page2_body">You choose the people you trust — a partner, a parent, a friend. When you want back in, you ask them, and they decide. Willpower stops being the weak link.</string>
+    <string name="intro_page3_title">Private by design</string>
+    <string name="intro_page3_body">No account, no sign-up, nothing to configure. Every request and message is end-to-end encrypted — nobody in between can read a thing, not even us.</string>
+    <string name="intro_welcome_title">Meet Pact</string>
+    <string name="intro_welcome_body">A calmer relationship with your phone, held together by the people who care about you.</string>
+    <string name="intro_welcome_cta">Get started</string>
+    <string name="intro_get_started">Get started</string>
+
+    <!-- role select -->
+    <string name="role_title">Who\'s setting up this phone?</string>
+    <string name="role_body">Pact has two sides: the person locking their apps, and the trusted people who help hold them.</string>
+    <string name="role_user_title">Block my apps</string>
+    <string name="role_user_body">I want to lock distracting apps and let people I trust hold the key.</string>
+    <string name="role_sponsor_title">I\'m the sponsor</string>
+    <string name="role_sponsor_body">Someone I care about asked me to hold their unlock codes.</string>
+
+    <!-- guardian step -->
+    <string name="guardian_title">Choose your sponsor</string>
+    <string name="guardian_body">Pick someone who wants to see you succeed — a partner, a parent, a close friend. They\'ll hold the unlock codes, so every unlock starts with asking them.</string>
+    <string name="guardian_name_label">Their name</string>
+    <string name="guardian_hint">Pick someone easy to reach — you\'ll need them every time you want back in.</string>
+
+    <!-- pair step -->
+    <string name="pair_title">Hand over the key</string>
+    <string name="pair_body">This QR code is the key to your locks. It\'s shown once — right now — and it belongs to %1$s, not you.</string>
+    <string name="pair_qr_desc">Pairing QR code</string>
+    <string name="pair_on_their_phone">On %1$s\'s phone:</string>
+    <string name="pair_step1">Install Pact — the same app you\'re using now</string>
+    <string name="pair_step2">During setup, pick “I\'m the sponsor”</string>
+    <string name="pair_step3">Scan this QR code with the scan button there</string>
+    <string name="pair_alt_authenticator">Rather not install anything? Google Authenticator or any 2FA app can scan this code too. Manual key: %1$s</string>
+    <string name="pair_warning">Don\'t scan it into your own phone — you\'d be holding the key to your own lock.</string>
+    <string name="pair_confirm">%1$s has the key</string>
+
+    <!-- prove step -->
+    <string name="prove_title">Prove it works</string>
+    <string name="prove_body">Ask %1$s for the 6-digit code on their screen right now.</string>
+    <string name="prove_error">That didn\'t match. Make sure they scanned the QR code on the previous step, then try the code they see right now.</string>
+    <string name="prove_show_qr">Show the QR code again</string>
+
+    <!-- permission step -->
+    <string name="perm_title">Turn on the shield</string>
+    <string name="perm_body">One Android permission lets Pact notice when a locked app opens, so it can step in front. Here\'s exactly how to grant it:</string>
+    <string name="perm_step1">Tap “Open settings” below</string>
+    <string name="perm_step2">Find “Pact app shield” in the list — sometimes under “Installed apps” or “Downloaded apps”</string>
+    <string name="perm_step3">Tap it and switch it on</string>
+    <string name="perm_step4">Android will show a warning — that\'s normal. Pact only sees which app opens, never what\'s on your screen. Tap “Allow”</string>
+    <string name="perm_step5">Come back here — this page turns green when it worked</string>
+    <string name="perm_status_on">The shield is up. You\'re protected.</string>
+    <string name="perm_status_waiting">Waiting for the shield…</string>
+    <string name="perm_open_settings">Open settings</string>
+    <string name="perm_later">I\'ll do this later</string>
+
+    <!-- pick apps -->
+    <string name="pick_title">What pulls you in?</string>
+    <string name="pick_min_one">Select at least one app</string>
+    <string name="search_apps">Search apps</string>
+    <string name="often_locked">Often locked</string>
+
+    <!-- seal -->
+    <string name="seal_title">You\'re all set</string>
+    <string name="seal_body">Your apps are locked. From here on, your circle decides when you get back in — and that\'s exactly the point.</string>
+    <string name="seal_begin">Begin</string>
+
+    <!-- home -->
+    <string name="home_with">with %1$s</string>
+    <string name="home_add_apps">Add apps</string>
+    <string name="home_settings">Settings</string>
+    <string name="hero_active_title">Protection is on</string>
+    <string name="hero_active_sub">Your Pact is holding steady</string>
+    <string name="hero_down_title">The shield is off</string>
+    <string name="hero_down_sub">Nothing is being blocked right now. Turn the shield back on in accessibility settings.</string>
+    <string name="hero_enable">Turn the shield on</string>
+    <string name="stat_limited_label">apps on a budget</string>
+    <string name="stat_screen_time_label">screen time today</string>
+    <string name="stat_streak_label">day streak</string>
+    <string name="section_on_break">On a break</string>
+    <string name="row_relocks_in">Relocks in %1$s</string>
+    <string name="action_relock">Relock</string>
+    <string name="section_your_apps">Your apps</string>
+    <string name="home_empty">Nothing here yet. Tap to pick the apps that eat your time.</string>
+    <string name="home_all_on_break">Everything is on a break right now.</string>
+    <string name="row_blocked_once">Blocked once today</string>
+    <string name="row_blocked_times">Blocked %1$d times today</string>
+
+    <!-- daily limits -->
+    <string name="row_time_left">%1$d min left today</string>
+    <string name="row_limit_reached">Limit reached · locked till tomorrow</string>
+    <string name="row_hard_locked">Locked all day</string>
+    <string name="row_limit_of">of %1$d min</string>
+    <string name="limit_label">Daily limit</string>
+    <string name="limit_help">How much time you get in this app each day. Loosening a limit needs your circle.</string>
+    <string name="limit_off">Off</string>
+    <string name="limit_minutes">%1$d min</string>
+    <string name="limit_hours">%1$dh</string>
+    <string name="limit_h_m">%1$dh %2$dm</string>
+    <string name="limits_step_title">Set your daily limits</string>
+    <string name="limits_step_body">You don\'t have to quit — just set how long each app gets per day. Slide to the left for a hard lock.</string>
+    <string name="wall_limit_reached">You\'ve used your %1$d minutes for today.</string>
+
+    <!-- challenges &amp; leaderboard -->
+    <string name="challenges_title">Challenges</string>
+    <string name="leaderboard_you">You</string>
+    <string name="leaderboard_challenge">Standings</string>
+    <string name="leaderboard_circle">Your circle</string>
+    <string name="leaderboard_solo">Add friends and share your streak — the leaderboard fills in as they join.</string>
+    <string name="leaderboard_screen_time">%1$d min today</string>
+    <string name="leaderboard_no_screen_time">no time used yet today</string>
+    <string name="leaderboard_out">broke streak</string>
+    <string name="share_streak">Share your streak</string>
+    <string name="challenge_day_of">Day %1$d of %2$d</string>
+    <string name="challenge_leader">%1$s is out in front</string>
+    <string name="challenge_ends_in">Ends in %1$s</string>
+    <string name="challenge_leave">Leave challenge</string>
+    <string name="challenge_invite_title">%1$s invited you</string>
+    <string name="challenge_invite_body">\"%1$s\" — keep the longest streak within your limits over %2$d days.</string>
+    <string name="challenge_join">Join</string>
+    <string name="challenge_no_thanks">Not now</string>
+    <string name="challenge_start_title">Start a challenge</string>
+    <string name="challenge_start_body">Dare your friends to keep the longest streak within their daily limits. Highest streak wins.</string>
+    <string name="challenge_start_button">New challenge</string>
+    <string name="challenge_need_friends">Add a friend to your circle first.</string>
+    <string name="challenge_create_title">New challenge</string>
+    <string name="challenge_name_label">Name</string>
+    <string name="challenge_length_label">Length</string>
+    <string name="challenge_days_n">%1$d days</string>
+    <string name="challenge_invite_label">Invite friends</string>
+    <string name="challenge_send_invites">Send invites</string>
+    <string name="challenge_preset_noscroll">No-Scroll Week</string>
+    <string name="challenge_preset_week">7-Day Streak</string>
+    <string name="challenge_preset_lockin">Lock-In</string>
+
+    <!-- share card -->
+    <string name="share_sheet_title">Share your streak</string>
+    <string name="share_caption">My streak on Pact 🛡 — staying within my daily limits with my friends. Join me.</string>
+    <string name="share_streak_unit">day streak</string>
+    <string name="share_streak_sub">within my daily limits</string>
+    <string name="share_stat_screen_time">screen time today</string>
+    <string name="share_stat_best">best streak</string>
+    <string name="share_challenge_rank">%1$s · #%2$d of %3$d</string>
+    <string name="share_footer">My friends hold my limits. — Pact</string>
+    <string name="dialog_locked_body">This app is locked by your Pact. Both actions below need a fresh code from %1$s.</string>
+    <string name="action_unlock_a_while">Unlock for a while…</string>
+    <string name="action_remove_from_pact">Remove from Pact…</string>
+    <string name="unlock_q_title">Unlock %1$s?</string>
+    <string name="ask_code">Ask %1$s for the code showing on their phone right now.</string>
+    <string name="duration_title">How long do you need?</string>
+    <string name="duration_5m">5 minutes</string>
+    <string name="duration_15m">15 minutes</string>
+    <string name="duration_1h">1 hour</string>
+    <string name="duration_midnight">Until midnight</string>
+    <string name="remove_q_title">Remove %1$s?</string>
+    <string name="remove_q_body">Ask %1$s for the current code to take this app out of your Pact.</string>
+
+    <!-- code verification -->
+    <string name="verify_wrong">That code didn\'t match. Codes change every 30 seconds — ask for a fresh one.</string>
+    <string name="verify_too_many">Too many tries. Locked for %1$s.</string>
+
+    <!-- block wall -->
+    <string name="wall_locked_title">%1$s is locked</string>
+    <string name="wall_ask">Ask %1$s for the current code</string>
+    <string name="wall_accepted">Code accepted. How long do you need?</string>
+    <string name="wall_go_home">Never mind — take me home</string>
+    <string name="cd_delete">Delete</string>
+    <string name="cd_locked">Locked</string>
+    <string-array name="encouragements">
+        <item>This pause is the whole point.</item>
+        <item>You asked for this wall on a clear-headed day.</item>
+        <item>The urge passes whether or not you feed it.</item>
+        <item>Five minutes from now, you\'ll be glad you stopped.</item>
+        <item>You\'re not missing anything that matters.</item>
+    </string-array>
+
+    <!-- settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_sponsor_section">Your sponsor</string>
+    <string name="settings_paired">Paired — they hold your unlock codes</string>
+    <string name="settings_change_sponsor">Change sponsor…</string>
+    <string name="settings_change_sponsor_hint">Changing sponsors needs a code from your current one, then pairs a brand-new key.</string>
+    <string name="settings_strict_section">Strict mode</string>
+    <string name="strict_title">Lock system Settings too</string>
+    <string name="strict_body">Stops the shield from being switched off quietly — opening Android Settings will ask for a code as well. Turning strict mode on is free; turning it off needs a code.</string>
+    <string name="settings_how_section">How Pact works</string>
+    <string name="how_body">Pact runs entirely on this phone — no account, no server, no internet. Unlock codes are standard authenticator codes (TOTP): your sponsor\'s phone and yours compute the same 6-digit number from a shared key and the clock, so codes work even with both phones offline.\n\nThe key appeared exactly once, during setup, and only your sponsor has it. On this phone it\'s stored encrypted inside the Android Keystore.</string>
+    <string name="settings_danger">Danger zone</string>
+    <string name="reset_action">End the Pact and reset…</string>
+    <string name="reset_hint">Removes every lock and starts over. Needs a code from %1$s.</string>
+    <string name="strict_off_title">Turn off strict mode?</string>
+    <string name="change_sponsor_title">Change sponsor?</string>
+    <string name="change_sponsor_body">First, a code from %1$s to approve the change.</string>
+    <string name="end_pact_title">End the Pact?</string>
+    <string name="end_pact_body">Ask %1$s for the current code to remove every lock and reset.</string>
+    <string name="repair_new_sponsor">New sponsor</string>
+    <string name="repair_scan_title">Scan on their phone</string>
+    <string name="repair_body_qr">On %1$s\'s phone: install Pact and choose “I\'m the sponsor”, or scan with Google Authenticator. Manual key:\n%2$s</string>
+    <string name="repair_enter_code">Enter the current code from %1$s to seal the new Pact.</string>
+    <string name="repair_wrong">That didn\'t match — try the code they see right now.</string>
+    <string name="they_added_it">They\'ve added it</string>
+
+    <!-- sponsor -->
+    <string name="sponsor_setup_title">You hold the key</string>
+    <string name="sponsor_setup_body">Someone you care about is locking their distracting apps, and they chose you as their sponsor. When they want back in, they\'ll ask you for the 6-digit code shown here.\n\nTheir phone is showing a QR code during setup — scan it below.</string>
+    <string name="sponsor_badge">Sponsor</string>
+    <string name="sponsor_hint_codes">When they ask for an unlock, read them the code. It changes every 30 seconds and needs no internet.</string>
+    <string name="sponsor_scan_hint">Point the camera at the QR code on their phone — it\'s on the “Hand over the key” step of their setup.</string>
+    <string name="sponsor_scan_button">Scan their QR code</string>
+    <string name="sponsor_manual_toggle">Camera trouble? Type the key instead</string>
+    <string name="sponsor_manual_hint">Their pairing screen shows the key as letters, too. Type or paste it here.</string>
+    <string name="sponsor_key_label">Key (ABCD EFGH …)</string>
+    <string name="sponsor_key_invalid">That doesn\'t look right — the key is 32 letters and digits.</string>
+    <string name="sponsor_add_key">Add key</string>
+    <string name="sponsor_key_added">Key added</string>
+    <string name="sponsor_whose">Whose apps does this key unlock?</string>
+    <string name="sponsor_empty">No keys yet. Tap + and scan the QR code on their phone.</string>
+    <string name="sponsor_add_person">Add a person</string>
+    <string name="sponsor_remove_title">Remove %1$s?</string>
+    <string name="sponsor_remove_body">You won\'t be able to give %1$s unlock codes anymore. They\'d have to pair with a sponsor again to change anything.</string>
+    <string name="sponsor_key_error">This key can\'t be read from secure storage.</string>
+    <string name="scan_not_pact">That QR code isn\'t a Pact key. Make sure their phone is showing the pairing screen.</string>
+
+    <!-- scanner -->
+    <string name="scan_title">Scan their pairing QR</string>
+    <string name="scan_hint">Line the code up inside the frame</string>
+    <string name="scan_perm">Pact needs the camera to scan the QR code.\nAllow camera access, or go back and type the key instead.</string>
+    <string name="cd_torch">Flashlight</string>
+
+    <!-- tiers -->
+    <string name="tier_red">Ask my circle</string>
+    <string name="tier_yellow">Mindful pause</string>
+    <string name="tier_label">When the day\'s time runs out</string>
+    <string name="tier_red_desc">More time needs a yes from your circle.</string>
+    <string name="tier_yellow_desc">More time needs a 30-second pause and a quick reflection — no one to ask.</string>
+    <string name="tier_downgrade_title">Relax to yellow?</string>
+    <string name="tier_downgrade_body">Making %1$s easier to open needs a code from %2$s.</string>
+
+    <!-- yellow unlock flow -->
+    <string name="wall_pause_title">Take a breath</string>
+    <string name="wall_pause_body">%1$d seconds. If you still want in after the pause, it\'s yours — for a short while.</string>
+    <string name="wall_whats_pulling">What brought you here?</string>
+    <string name="trigger_bored">Bored</string>
+    <string name="trigger_stress">Stress</string>
+    <string name="trigger_habit">Habit</string>
+    <string name="trigger_anxiety">Anxiety</string>
+    <string name="trigger_lonely">Lonely</string>
+    <string name="trigger_procrastination">Putting something off</string>
+    <string name="trigger_needed">I actually need it</string>
+    <string name="wall_pause_done">Still want in?</string>
+    <string name="wall_open_5m">Open for 5 minutes</string>
+    <string name="wall_open_15m">Open for 15 minutes</string>
+    <string name="wall_cooldown">Self-unlock is resting for %1$s. A code from %2$s still works.</string>
+    <string name="wall_use_code_instead">Use a sponsor code instead</string>
+
+    <!-- reflection -->
+    <string name="reflect_title">Was your %1$s break worth it?</string>
+    <string name="reflect_body">One honest tap. It sharpens your stats — nobody else sees it.</string>
+    <string name="reflect_yes">Worth it</string>
+    <string name="reflect_no">Not really</string>
+    <string name="reflect_skip">Skip</string>
+
+    <!-- stats -->
+    <string name="stats_title">Insights</string>
+    <string name="stats_open">Insights</string>
+    <string name="stats_streak_value">%1$d</string>
+    <string name="stats_streak_label">days since your last unlock</string>
+    <string name="stats_streak_longest">Longest: %1$d days</string>
+    <string name="stats_week_section">Last 7 days</string>
+    <string name="stats_blocks_7d">walls shown</string>
+    <string name="stats_walkaways_7d">times you turned back</string>
+    <string name="stats_unlocks_7d">unlocks</string>
+    <string name="stats_minutes_7d">minutes unlocked</string>
+    <string name="stats_chart_blocks_title">Walls per day</string>
+    <string name="stats_tempting_section">Most tempting</string>
+    <string name="stats_hours_section">When cravings hit</string>
+    <string name="stats_hours_peak">Your pull is strongest around %1$s</string>
+    <string name="stats_triggers_section">What drives it</string>
+    <string name="stats_worth_section">Looking back</string>
+    <string name="stats_worth_ratio">%1$d%% of reflected breaks felt worth it (%2$d answered)</string>
+    <string name="stats_empty">Not enough data yet. Live with your Pact for a few days and check back.</string>
+    <string name="stats_no_triggers">No urges logged yet — yellow-tier unlocks ask what\'s pulling you.</string>
+
+    <!-- notifications -->
+    <string name="notif_channel_breaks">Breaks</string>
+    <string name="notif_channel_shield">Shield status</string>
+    <string name="notif_break_title">%1$s is unlocked</string>
+    <string name="notif_break_body">Relocks automatically at %1$s</string>
+    <string name="notif_relock_now">Relock now</string>
+    <string name="notif_shield_down_title">The shield is down</string>
+    <string name="notif_shield_down_body">Pact\'s accessibility service was turned off. Nothing is being blocked.</string>
+
+    <!-- widget -->
+    <string name="widget_description">Shield status, streak, and today\'s blocks at a glance.</string>
+    <string name="widget_streak">%1$dd streak</string>
+    <string name="widget_blocks_today">%1$d blocks today</string>
+    <string name="widget_shield_on">Protected</string>
+    <string name="widget_shield_off">Shield off</string>
+
+    <!-- backup -->
+    <string name="backup_section">Backup</string>
+    <string name="backup_export">Export encrypted backup…</string>
+    <string name="backup_export_hint">Settings, tiers, and stats — encrypted with a passphrase you choose. The unlock key is deliberately never included.</string>
+    <string name="backup_export_csv">Export statistics (CSV)…</string>
+    <string name="backup_import">Import backup…</string>
+    <string name="backup_passphrase">Passphrase</string>
+    <string name="backup_passphrase_hint">You\'ll need it to restore. There is no recovery.</string>
+    <string name="backup_encrypt_and_save">Encrypt &amp; save</string>
+    <string name="backup_decrypt_and_restore">Decrypt &amp; restore</string>
+    <string name="backup_done">Backup saved.</string>
+    <string name="backup_restored">Backup restored.</string>
+    <string name="backup_failed">That didn\'t work — check the file and passphrase.</string>
+    <string name="backup_import_note">Restores apps, tiers, and stats. Your current sponsor pairing stays as it is.</string>
+
+    <!-- focus session -->
+    <string name="focus_start">Start a focus session</string>
+    <string name="focus_body">Lock everything for a set time. No requests, no breaks — a clean stretch you give yourself.</string>
+    <string name="focus_active_title">Focus session</string>
+    <string name="focus_active_sub">Everything stays locked for %1$s</string>
+    <string name="focus_pick_title">How long to focus?</string>
+    <string name="focus_25m">25 minutes</string>
+    <string name="focus_1h">1 hour</string>
+    <string name="focus_2h">2 hours</string>
+    <string name="focus_confirm_note">This can\'t be ended early — that\'s what makes it work.</string>
+
+    <!-- trust network -->
+    <string name="circle_title">Your circle</string>
+    <string name="circle_step_title">Build your circle</string>
+    <string name="circle_step_body">Your circle is the people who hold your locks — a partner, a parent, a close friend. When you want back in, they decide. Have them install Pact, choose “I\'m a trusted person”, and scan this code.</string>
+    <string name="circle_your_name_title">What\'s your name?</string>
+    <string name="circle_your_name_body">Your circle sees this name on requests and messages.</string>
+    <string name="my_name_label">Your name</string>
+    <string name="circle_joined">%1$s joined your circle</string>
+    <string name="circle_waiting">Waiting for someone to scan…</string>
+    <string name="circle_members">%1$d in your circle</string>
+    <string name="circle_add_person">Add a person</string>
+    <string name="circle_empty">Nobody yet. Your locks work, but only your circle can open the red ones.</string>
+    <string name="circle_needs_people">Your circle is empty — red locks fall back to a mindful pause until someone joins. Tap to add a person.</string>
+    <string name="role_trusted_title">I\'m a trusted person</string>
+    <string name="role_trusted_body">Someone I care about asked me to hold their locks.</string>
+    <string name="trusted_setup_title">Hold their locks</string>
+    <string name="trusted_setup_body">Someone you care about is locking their distracting apps and wants you in their circle. When they ask for time, you decide — right from this app.\n\nTheir phone shows a code during setup. Scan it below.</string>
+    <string name="trusted_scan">Scan their code</string>
+    <string name="trusted_paired">You\'re in %1$s\'s circle</string>
+    <string name="trusted_home_hint">When they hit a wall, their request lands here. You can also just talk.</string>
+    <string name="trusted_no_wards">Nobody yet. Tap + and scan the code on their phone.</string>
+
+    <!-- approval rules -->
+    <string name="rule_section">Who can open a lock</string>
+    <string name="rule_any">Any one person</string>
+    <string name="rule_any_desc">The first yes wins.</string>
+    <string name="rule_majority">Most of them</string>
+    <string name="rule_majority_desc">More than half must say yes.</string>
+    <string name="rule_all">Everyone</string>
+    <string name="rule_all_desc">One no is a no.</string>
+
+    <!-- permissions -->
+    <string name="perm_can_approve">Can approve requests</string>
+    <string name="perm_can_stats">Can view your stats</string>
+    <string name="perm_chat_only">Chat only</string>
+    <string name="contact_remove">Remove from circle…</string>
+    <string name="contact_remove_note">Removing someone needs your circle\'s approval — that\'s the point.</string>
+
+    <!-- requests -->
+    <string name="request_ask">Ask your circle</string>
+    <string name="request_how_long">How much time?</string>
+    <string name="request_why">Why? (they\'ll see this)</string>
+    <string name="request_send">Send request</string>
+    <string name="request_sent">Request sent</string>
+    <string name="request_waiting">Your circle has been asked. You can wait here or walk away — if they say yes, the time starts automatically.</string>
+    <string name="request_expires_in">Request expires in %1$s</string>
+    <string name="request_approved_banner">%1$s said yes — %2$d minutes granted</string>
+    <string name="request_denied_banner">Your circle said no this time</string>
+    <string name="request_expired_banner">Nobody answered in time</string>
+    <string name="request_pending_banner">Waiting on your circle…</string>
+    <string name="request_usage_note">%1$d blocks today</string>
+    <string name="request_change_sent">Sent to your circle for approval. It applies automatically when they agree.</string>
+    <string name="request_min_generic">+%1$d minutes</string>
+
+    <!-- incoming (trusted person side) -->
+    <string name="incoming_title">%1$s is asking</string>
+    <string name="incoming_unlock">%1$s · +%2$d minutes</string>
+    <string name="incoming_change_remove">Wants to remove %1$s from their locks</string>
+    <string name="incoming_change_tier">Wants to make %1$s easier to open</string>
+    <string name="incoming_change_limit">Wants to raise their %1$s limit to %2$d min/day</string>
+    <string name="incoming_change_strict">Wants to turn off strict mode</string>
+    <string name="incoming_change_reset">Wants to end their Pact and reset</string>
+    <string name="incoming_reason">Their reason: %1$s</string>
+    <string name="incoming_approve">Approve</string>
+    <string name="incoming_deny">Not now</string>
+    <string name="incoming_custom">Different amount…</string>
+    <string name="incoming_custom_title">Grant how long?</string>
+    <string name="incoming_message_hint">Add a note (optional)</string>
+    <string name="incoming_none">No open requests. When they hit a wall, it lands here.</string>
+    <string name="incoming_answered_yes">You said yes</string>
+    <string name="incoming_answered_no">You said no</string>
+
+    <!-- chat -->
+    <string name="chat_title">Messages</string>
+    <string name="chat_hint">Message…</string>
+    <string name="chat_send">Send</string>
+    <string name="chat_empty">Say something. Encouragement counts double on hard days.</string>
+    <string name="chat_queued">Sending…</string>
+    <string name="chat_delete">Delete for me</string>
+    <string name="chat_open">Chat</string>
+
+    <!-- notifications (network) -->
+    <string name="notif_channel_network">Your circle</string>
+    <string name="notif_request_title">%1$s is asking for time</string>
+    <string name="notif_request_body">%1$s — open Pact to answer</string>
+    <string name="notif_approved_title">Request approved</string>
+    <string name="notif_approved_body">%1$s said yes to %2$s</string>
+    <string name="notif_denied_title">Not this time</string>
+    <string name="notif_denied_body">%1$s said no to %2$s</string>
+    <string name="notif_message_title">%1$s</string>
+    <string name="notif_paired_title">Your circle grew</string>
+    <string name="notif_paired_body">%1$s joined your circle</string>
+
+    <!-- identity / danger -->
+    <string name="identity_reset">New identity (advanced)…</string>
+    <string name="identity_reset_note">Generates fresh keys and clears your circle. Everyone must scan your code again.</string>
+    <string name="no_connection_note">Delivery may take a moment — messages queue and send when the network allows.</string>
+
+    <!-- plurals -->
+    <plurals name="lock_n_apps">
+        <item quantity="one">Lock %1$d app</item>
+        <item quantity="other">Lock %1$d apps</item>
+    </plurals>
+    <plurals name="n_apps">
+        <item quantity="one">%1$d app</item>
+        <item quantity="other">%1$d apps</item>
+    </plurals>
+</resources>
