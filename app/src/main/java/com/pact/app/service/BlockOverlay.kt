@@ -44,6 +44,9 @@ class BlockOverlay(private val service: AccessibilityService) {
 
         val lifecycleOwner = OverlayOwner()
         val composeView = ComposeView(service).apply {
+            // Paint the wall's base colour immediately so the app underneath never
+            // flashes through in the instant before Compose first draws.
+            setBackgroundColor(0xFF070A14.toInt())
             setViewTreeLifecycleOwner(lifecycleOwner)
             setViewTreeViewModelStoreOwner(lifecycleOwner)
             setViewTreeSavedStateRegistryOwner(lifecycleOwner)
@@ -75,7 +78,10 @@ class BlockOverlay(private val service: AccessibilityService) {
         val params = WindowManager.LayoutParams().apply {
             type = WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY
             format = PixelFormat.TRANSLUCENT
-            flags = WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
+            // Cover the whole screen, including behind the status and nav bars, so
+            // the wall reads as one solid surface rather than a floating panel.
+            flags = WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
+                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
             width = WindowManager.LayoutParams.MATCH_PARENT
             height = WindowManager.LayoutParams.MATCH_PARENT
         }

@@ -8,7 +8,7 @@ way to more is your **circle**, the people you trust. Then the part that makes i
 your friends **share your screen time** and **race to keep the longest streak** within your
 limits. No passwords, no accounts, no servers, no codes to type.
 
-<p align="center"><em>Ready-to-install APK: <a href="release/Pact-v5.0.apk"><code>release/Pact-v5.0.apk</code></a></em></p>
+<p align="center"><em>Ready-to-install APK: <a href="release/Pact-v5.1.apk"><code>release/Pact-v5.1.apk</code></a></em></p>
 
 ---
 
@@ -107,6 +107,22 @@ public relay → Nostr → custom — **without touching the crypto, the approva
 The default is an open public relay (no accounts) that carries only end-to-end-encrypted
 payloads on unguessable inbox topics.
 
+## The shield — on-device enforcement
+
+Blocking runs entirely on the device, offline. An `AccessibilityService` watches the foreground
+app and, when a locked app is over its daily budget, covers it with a full-screen
+`TYPE_ACCESSIBILITY_OVERLAY` window drawn by the service itself — not a launched activity, which
+modern Android silently blocks as a "background activity start."
+
+Detection is deliberately **self-healing**. Rather than trust one event type, every
+`WINDOW_STATE_CHANGED` **and** `WINDOWS_CHANGED` event funnels through a single idempotent
+`reconcile()` that derives the true foreground app (from `getRootInActiveWindow()` when an event's
+package is stale) and makes the wall's state match it. This fixes the classic failure mode where
+leaving a blocked app and returning left it open — some launchers never re-fire
+`WINDOW_STATE_CHANGED` on resume, but the window-layer change still does, and the reconcile
+re-asserts the wall. Daily budgets are metered by timing each app's foreground stretches and
+re-checking on a one-minute tick so the wall appears the moment the allowance is spent.
+
 ## Also included
 
 Per-app daily limits · **challenges & a live streak leaderboard** · end-to-end-encrypted
@@ -118,7 +134,7 @@ passphrase backup + stats CSV · animated, Compose-drawn illustrations · 10 lan
 
 ## Install
 
-Copy `release/Pact-v5.0.apk` to **both** phones — yours and each trusted person's — allow
+Copy `release/Pact-v5.1.apk` to **both** phones — yours and each trusted person's — allow
 "install from unknown sources", and follow the in-app setup. Requires Android 8.0+ (API 26).
 No Google services needed.
 
