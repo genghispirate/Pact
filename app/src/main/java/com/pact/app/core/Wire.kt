@@ -30,6 +30,8 @@ object Wire {
     const val TYPE_STATS = "stats"
     /** Challenge invites and answers. */
     const val TYPE_CHALLENGE = "challenge"
+    /** Lightweight live "what am I up to" status shared with the squad. */
+    const val TYPE_PRESENCE = "presence"
 
     /** Requests expire quickly: an approval is for *now*, not for later reuse. */
     const val REQUEST_TTL_MILLIS = 15 * 60 * 1000L

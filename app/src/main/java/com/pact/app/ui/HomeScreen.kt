@@ -182,12 +182,19 @@ fun HomeScreen(
             // squad: the co-op tower + everyone's streaks
             if (hasCircle) {
                 item {
+                    val myStatus = when {
+                        snapshot.focusActive(now) -> TrustNetwork.PRESENCE_FOCUS
+                        snapshot.unlockUntil.any { it.value > now && it.key in snapshot.blocked } -> TrustNetwork.PRESENCE_OFFTRACK
+                        else -> TrustNetwork.PRESENCE_ZONE
+                    }
                     SquadTowerCard(
                         myFace = network.myAvatar,
                         myName = netSnap.myName.ifBlank { stringResource(R.string.leaderboard_you) },
                         myStreak = snapshot.streakDays(now),
+                        myStatus = myStatus,
                         supporters = netSnap.supporters(),
                         peerStats = netSnap.peerStats,
+                        peerPresence = netSnap.peerPresence,
                         onOpen = onOpenChallenges,
                     )
                 }
@@ -607,8 +614,10 @@ private fun SquadTowerCard(
     myFace: String,
     myName: String,
     myStreak: Int,
+    myStatus: String,
     supporters: List<TrustNetwork.Contact>,
     peerStats: Map<String, TrustNetwork.PeerStats>,
+    peerPresence: Map<String, TrustNetwork.Presence>,
     onOpen: () -> Unit,
 ) {
     val teamStreak = myStreak + supporters.sumOf { peerStats[it.id]?.streakDays ?: 0 }
@@ -658,26 +667,44 @@ private fun SquadTowerCard(
         }
         Spacer(Modifier.height(16.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-            AvatarBubble(face = myFace, name = myName, streak = myStreak, me = true)
+            AvatarBubble(face = myFace, name = myName, streak = myStreak, status = myStatus, me = true)
             supporters.take(4).forEach { c ->
-                AvatarBubble(face = c.face, name = c.name, streak = peerStats[c.id]?.streakDays)
+                AvatarBubble(
+                    face = c.face,
+                    name = c.name,
+                    streak = peerStats[c.id]?.streakDays,
+                    status = peerPresence[c.id]?.takeIf { it.fresh() }?.status,
+                )
             }
         }
     }
 }
 
 @Composable
-private fun AvatarBubble(face: String, name: String, streak: Int?, me: Boolean = false) {
+private fun AvatarBubble(face: String, name: String, streak: Int?, status: String?, me: Boolean = false) {
+    val dot = statusColor(status)
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Box(
-            modifier = Modifier
-                .size(46.dp)
-                .clip(CircleShape)
-                .background(Surface2)
-                .border(if (me) 2.dp else 1.dp, if (me) Periwinkle else CardBorder, CircleShape),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(face, fontSize = 24.sp)
+        Box(contentAlignment = Alignment.BottomEnd) {
+            Box(
+                modifier = Modifier
+                    .size(46.dp)
+                    .clip(CircleShape)
+                    .background(Surface2)
+                    .border(if (me) 2.dp else 1.dp, if (me) Periwinkle else CardBorder, CircleShape),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(face, fontSize = 24.sp)
+            }
+            // live status dot
+            Box(
+                modifier = Modifier
+                    .size(14.dp)
+                    .clip(CircleShape)
+                    .background(Surface1)
+                    .padding(2.dp)
+                    .clip(CircleShape)
+                    .background(dot)
+            )
         }
         Spacer(Modifier.height(4.dp))
         Text(
@@ -687,11 +714,26 @@ private fun AvatarBubble(face: String, name: String, streak: Int?, me: Boolean =
             maxLines = 1,
         )
         Text(
-            if (streak != null) "🔥$streak" else "·",
+            statusLabel(status, streak),
             style = MaterialTheme.typography.labelMedium,
             color = TextTertiary,
+            maxLines = 1,
         )
     }
+}
+
+private fun statusColor(status: String?): androidx.compose.ui.graphics.Color = when (status) {
+    TrustNetwork.PRESENCE_FOCUS, TrustNetwork.PRESENCE_ZONE -> Mint
+    TrustNetwork.PRESENCE_OFFTRACK -> Rose
+    else -> TextTertiary
+}
+
+@Composable
+private fun statusLabel(status: String?, streak: Int?): String = when (status) {
+    TrustNetwork.PRESENCE_FOCUS -> stringResource(R.string.presence_focus)
+    TrustNetwork.PRESENCE_ZONE -> stringResource(R.string.presence_zone)
+    TrustNetwork.PRESENCE_OFFTRACK -> stringResource(R.string.presence_off)
+    else -> if (streak != null) "🔥$streak" else stringResource(R.string.presence_idle)
 }
 
 /** Big Breezy-style status hero: shield state + stat tiles. */

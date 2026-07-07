@@ -146,6 +146,10 @@
 
     <string name="squad_tower_label">SQUAD TOWER</string>
     <string name="squad_streak_unit">🔥 team streak</string>
+    <string name="presence_zone">in the zone</string>
+    <string name="presence_focus">focusing</string>
+    <string name="presence_off">off track</string>
+    <string name="presence_idle">idle</string>
 
     <!-- challenges &amp; leaderboard -->
     <string name="challenges_title">Challenges</string>

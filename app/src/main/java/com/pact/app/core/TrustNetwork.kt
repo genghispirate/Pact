@@ -150,6 +150,11 @@ class TrustNetwork private constructor(context: Context) {
         val myDecision: Boolean? = null,
     )
 
+    /** A friend's live "what are they up to" status. Ephemeral; goes stale on its own. */
+    data class Presence(val status: String, val at: Long) {
+        fun fresh(now: Long = System.currentTimeMillis()) = now - at < PRESENCE_TTL_MILLIS
+    }
+
     /** A friend's shared screen-time snapshot, received encrypted. */
     data class PeerStats(
         val streakDays: Int,
@@ -190,6 +195,7 @@ class TrustNetwork private constructor(context: Context) {
         val unread: Map<String, Int> = emptyMap(),
         val pendingOutbox: Int = 0,
         val peerStats: Map<String, PeerStats> = emptyMap(),
+        val peerPresence: Map<String, Presence> = emptyMap(),
         val challenge: Challenge? = null,
     ) {
         fun supporters() = contacts.filter { it.direction == Direction.SUPPORTER }
@@ -436,6 +442,43 @@ class TrustNetwork private constructor(context: Context) {
         prefs.edit().putLong(KEY_LAST_STATS_SHARE, now).apply()
     }
 
+    /** Live presence, held in memory only — it's meant to be fleeting. */
+    private val presenceMap = mutableMapOf<String, Presence>()
+
+    /** My current one-word status, derived purely from local blocking state. */
+    private fun myStatus(): String {
+        val s = PactState.get(appContext).snapshot.value
+        val now = System.currentTimeMillis()
+        return when {
+            s.focusActive(now) -> PRESENCE_FOCUS
+            s.unlockUntil.any { it.value > now && it.key in s.blocked } -> PRESENCE_OFFTRACK
+            else -> PRESENCE_ZONE
+        }
+    }
+
+    /** Share a coarse status with the whole squad — no app names, just a vibe. Throttled. */
+    private fun maybeBroadcastPresence() {
+        if (!PactState.get(appContext).snapshot.value.setupComplete) return
+        val last = prefs.getLong(KEY_LAST_PRESENCE, 0L)
+        val now = System.currentTimeMillis()
+        if (now - last < 90_000L) return
+        val contacts = loadContacts()
+        if (contacts.isEmpty()) return
+        val body = JSONObject().put("st", myStatus())
+        for (c in contacts) {
+            sendPayload(Wire.TYPE_PRESENCE, UUID.randomUUID().toString(), body, PRESENCE_TTL_MILLIS, c)
+        }
+        prefs.edit().putLong(KEY_LAST_PRESENCE, now).apply()
+    }
+
+    private fun handlePresence(payload: Wire.Payload) {
+        val from = B64.encode(payload.fromSignPublic)
+        if (contact(from) == null) return
+        val status = payload.body.optString("st").ifBlank { PRESENCE_ZONE }
+        presenceMap[from] = Presence(status, System.currentTimeMillis())
+        refresh()
+    }
+
     /** Start a challenge and invite [contactIds]. Returns the challenge. */
     fun createChallenge(name: String, days: Int, contactIds: Set<String>): Challenge {
         val challenge = Challenge(
@@ -672,6 +715,7 @@ class TrustNetwork private constructor(context: Context) {
     /** One full sync pass: drain the outbox, fetch and route the inbox. */
     suspend fun syncNow(): Unit = lock.withLock {
         runCatching { maybeShareStats() }
+        runCatching { maybeBroadcastPresence() }
         runCatching { outbox.drain(transport) }
         val since = prefs.getLong(KEY_LAST_SYNC, System.currentTimeMillis() - Wire.MESSAGE_TTL_MILLIS)
         val fetched = runCatching { transport.fetch(myInbox, since) }.getOrDefault(emptyList())
@@ -700,6 +744,7 @@ class TrustNetwork private constructor(context: Context) {
             Wire.TYPE_RESPONSE -> handleResponse(payload)
             Wire.TYPE_STATS -> handleStats(payload)
             Wire.TYPE_CHALLENGE -> handleChallenge(payload)
+            Wire.TYPE_PRESENCE -> handlePresence(payload)
         }
     }
 
@@ -829,6 +874,7 @@ class TrustNetwork private constructor(context: Context) {
         unread = loadUnread(),
         pendingOutbox = outbox.size(),
         peerStats = loadPeerStats(),
+        peerPresence = presenceMap.filterValues { it.fresh() }.toMap(),
         challenge = loadChallenge(),
     )
 
@@ -1045,6 +1091,12 @@ class TrustNetwork private constructor(context: Context) {
         /** The glossy emoji faces users pick from; also used to auto-assign one per contact. */
         val AVATARS = listOf("🐺", "👽", "👻", "🦊", "🐉", "🔥", "🌙", "🦁", "🐼", "🤖", "🐸", "🦄")
 
+        // Live presence: coarse and short-lived.
+        const val PRESENCE_ZONE = "zone"        // within limits — in the zone
+        const val PRESENCE_FOCUS = "focus"      // a focus session is running
+        const val PRESENCE_OFFTRACK = "off"     // past a limit on a bonus break
+        const val PRESENCE_TTL_MILLIS = 7 * 60 * 1000L
+
         private const val KEY_IDENTITY = "identity"
         private const val KEY_INBOX = "inbox"
         private const val KEY_MY_NAME = "my_name"
@@ -1061,6 +1113,7 @@ class TrustNetwork private constructor(context: Context) {
         private const val KEY_PEER_STATS = "peer_stats"
         private const val KEY_CHALLENGE = "challenge"
         private const val KEY_LAST_STATS_SHARE = "last_stats_share"
+        private const val KEY_LAST_PRESENCE = "last_presence"
 
         @Volatile
         private var instance: TrustNetwork? = null

@@ -87,6 +87,7 @@ fun PactButton(
     tonal: Boolean = false,
 ) {
     val shape = RoundedCornerShape(16.dp)
+    val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
     Box(
         modifier = modifier
             .height(56.dp)
@@ -99,7 +100,10 @@ fun PactButton(
                     .background(com.pact.app.ui.theme.Periwinkle)
             )
             .alpha(if (enabled) 1f else 0.4f)
-            .clickable(enabled = enabled, onClick = onClick),
+            .clickable(enabled = enabled) {
+                haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                onClick()
+            },
         contentAlignment = Alignment.Center,
     ) {
         Text(
