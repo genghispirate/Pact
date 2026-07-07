@@ -151,6 +151,18 @@
     <string name="presence_off">off track</string>
     <string name="presence_idle">idle</string>
 
+    <!-- request-in-chat widget -->
+    <string name="widget_wants">Wants %1$s · +%2$d min 🔓</string>
+    <string name="widget_grant">Grant 🔑</string>
+    <string name="widget_deny">Deny 🛑</string>
+    <string name="widget_granted">Granted 🔑</string>
+    <string name="widget_denied">Denied 🛑</string>
+    <string name="widget_you_asked">You asked for +%1$d min of %2$s</string>
+    <string name="widget_status_waiting">Waiting on your squad…</string>
+    <string name="widget_status_granted">Granted 🔑 — you\'re in</string>
+    <string name="widget_status_denied">Denied 🛑</string>
+    <string name="widget_status_expired">Expired</string>
+
     <!-- challenges &amp; leaderboard -->
     <string name="challenges_title">Challenges</string>
     <string name="leaderboard_you">You</string>

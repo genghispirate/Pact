@@ -853,6 +853,7 @@ private fun PickAppsStep(
 
 @Composable
 private fun SealStep(circleCount: Int, onFinish: () -> Unit) {
+    Box(Modifier.fillMaxSize()) {
     StepScaffold(
         title = stringResource(R.string.seal_title),
         subtitle = if (circleCount > 0) {
@@ -881,5 +882,7 @@ private fun SealStep(circleCount: Int, onFinish: () -> Unit) {
             onClick = onFinish,
             modifier = Modifier.fillMaxWidth(),
         )
+    }
+    Confetti(Modifier.fillMaxSize())
     }
 }

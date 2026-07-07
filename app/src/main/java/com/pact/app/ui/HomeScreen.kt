@@ -8,6 +8,8 @@ import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -648,6 +650,14 @@ private fun SquadTowerCard(
                 }
             }
             // the tower: blocks stack upward, glowing lime
+            val pulse by rememberInfiniteTransition(label = "tower").animateFloat(
+                initialValue = 0.45f, targetValue = 1f,
+                animationSpec = androidx.compose.animation.core.infiniteRepeatable(
+                    androidx.compose.animation.core.tween(1300),
+                    androidx.compose.animation.core.RepeatMode.Reverse,
+                ),
+                label = "pulse",
+            )
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(3.dp),
@@ -655,12 +665,13 @@ private fun SquadTowerCard(
                 val blocks = level.coerceIn(1, 6)
                 repeat(blocks) { i ->
                     val fromTop = i
+                    val alpha = if (i == 0) pulse else 0.55f + 0.45f * (fromTop.toFloat() / blocks)
                     Box(
                         modifier = Modifier
                             .width((26 + fromTop * 5).dp)
                             .height(10.dp)
                             .clip(RoundedCornerShape(3.dp))
-                            .background(Periwinkle.copy(alpha = 0.55f + 0.45f * (fromTop.toFloat() / blocks)))
+                            .background(Periwinkle.copy(alpha = alpha))
                     )
                 }
             }

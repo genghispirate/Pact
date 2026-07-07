@@ -32,6 +32,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.drawscope.rotate as rotateDraw
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -196,6 +197,50 @@ fun CodeInput(
             }
         },
     )
+}
+
+/** A quick one-shot confetti burst for wins — armed on first composition. */
+@Composable
+fun Confetti(modifier: Modifier = Modifier) {
+    val colors = listOf(
+        com.pact.app.ui.theme.Periwinkle,   // lime
+        com.pact.app.ui.theme.Violet,        // lavender
+        com.pact.app.ui.theme.Rose,          // coral
+        Color(0xFFF5F5F5),
+    )
+    data class Bit(val x: Float, val drift: Float, val fall: Float, val size: Float, val spin: Float, val color: Color)
+    val bits = remember {
+        List(44) {
+            Bit(
+                x = kotlin.random.Random.nextFloat(),
+                drift = (kotlin.random.Random.nextFloat() - 0.5f) * 0.4f,
+                fall = 0.7f + kotlin.random.Random.nextFloat() * 0.6f,
+                size = 10f + kotlin.random.Random.nextFloat() * 14f,
+                spin = kotlin.random.Random.nextFloat() * 720f,
+                color = colors[kotlin.random.Random.nextInt(colors.size)],
+            )
+        }
+    }
+    val anim = remember { androidx.compose.animation.core.Animatable(0f) }
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        anim.animateTo(1f, androidx.compose.animation.core.tween(1500))
+    }
+    androidx.compose.foundation.Canvas(modifier = modifier) {
+        val t = anim.value
+        if (t >= 1f) return@Canvas
+        bits.forEach { b ->
+            val x = size.width * (b.x + b.drift * t)
+            val y = -30f + (size.height + 60f) * (t * t) * b.fall
+            rotateDraw(b.spin * t, androidx.compose.ui.geometry.Offset(x, y)) {
+                drawRoundRect(
+                    color = b.color.copy(alpha = (1f - t).coerceIn(0f, 1f)),
+                    topLeft = androidx.compose.ui.geometry.Offset(x, y),
+                    size = androidx.compose.ui.geometry.Size(b.size, b.size * 0.6f),
+                    cornerRadius = androidx.compose.ui.geometry.CornerRadius(2f, 2f),
+                )
+            }
+        }
+    }
 }
 
 @Composable
