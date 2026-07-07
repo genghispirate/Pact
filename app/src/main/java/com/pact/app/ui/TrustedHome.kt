@@ -30,6 +30,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.Chat
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Dialpad
 import androidx.compose.material.icons.rounded.QrCodeScanner
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
@@ -56,6 +57,7 @@ import androidx.compose.ui.unit.dp
 import com.pact.app.R
 import com.pact.app.core.PactState
 import com.pact.app.core.TrustNetwork
+import kotlinx.coroutines.launch
 import com.pact.app.ui.theme.Amber
 import com.pact.app.ui.theme.CardBorder
 import com.pact.app.ui.theme.Mint
@@ -78,9 +80,12 @@ import com.pact.app.ui.theme.TextTertiary
 fun TrustedSetupFlow(state: PactState, onBack: () -> Unit, onDone: () -> Unit) {
     val context = LocalContext.current
     val network = remember { TrustNetwork.get(context) }
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
     var myName by remember { mutableStateOf(network.myName) }
     var scanning by remember { mutableStateOf(false) }
     var pairedName by remember { mutableStateOf<String?>(null) }
+    var code by remember { mutableStateOf("") }
+    var redeeming by remember { mutableStateOf(false) }
 
     if (scanning) {
         ScanScreen(
@@ -159,6 +164,52 @@ fun TrustedSetupFlow(state: PactState, onBack: () -> Unit, onDone: () -> Unit) {
                     scanning = true
                 },
                 enabled = myName.trim().length >= 2,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+        Spacer(Modifier.height(16.dp))
+        PactCard {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Rounded.Dialpad, contentDescription = null, tint = Periwinkle)
+                Spacer(Modifier.width(12.dp))
+                Text(
+                    stringResource(R.string.pair_enter_code_hint),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = TextSecondary,
+                )
+            }
+            Spacer(Modifier.height(14.dp))
+            OutlinedTextField(
+                value = code,
+                onValueChange = { code = it.uppercase() },
+                label = { Text(stringResource(R.string.pair_enter_code_label)) },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = {}),
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Periwinkle,
+                    unfocusedBorderColor = Surface2,
+                ),
+            )
+            Spacer(Modifier.height(14.dp))
+            PactButton(
+                if (redeeming) stringResource(R.string.pair_connecting) else stringResource(R.string.pair_connect),
+                onClick = {
+                    network.myName = myName
+                    redeeming = true
+                    scope.launch {
+                        val contact = network.redeemPairingCode(code)
+                        redeeming = false
+                        if (contact != null) {
+                            pairedName = contact.name
+                        } else {
+                            Toast.makeText(context, context.getString(R.string.pair_code_not_found), Toast.LENGTH_LONG).show()
+                        }
+                    }
+                },
+                enabled = myName.trim().length >= 2 && code.trim().length >= 6 && !redeeming,
                 modifier = Modifier.fillMaxWidth(),
             )
         }

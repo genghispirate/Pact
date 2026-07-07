@@ -103,6 +103,32 @@
     <string name="row_blocked_once">Blocked once today</string>
     <string name="row_blocked_times">Blocked %1$d times today</string>
 
+    <!-- remote pairing by code -->
+    <string name="pair_code_reveal">Not in the same room? Invite by code</string>
+    <string name="pair_code_title">YOUR INVITE CODE</string>
+    <string name="pair_code_hint">Share it with your trusted person. Works for a little while.</string>
+    <string name="pair_code_share">Share code</string>
+    <string name="pair_code_body">Send a trusted person an invite code over any app — they don\'t need to be with you.</string>
+    <string name="pair_share_message">Be my trusted person on Pact 🛡. Install Pact, choose \"I\'m a trusted person\", and enter this code: %1$s</string>
+    <string name="pair_enter_code_hint">Not together? Enter the invite code they sent you.</string>
+    <string name="pair_enter_code_label">Invite code</string>
+    <string name="pair_connect">Connect</string>
+    <string name="pair_connecting">Connecting…</string>
+    <string name="pair_code_not_found">That code didn\'t work. Ask for a fresh one — codes don\'t last forever.</string>
+    <string name="circle_add_section">Add to your circle</string>
+
+    <!-- reliability -->
+    <string name="settings_reliability_section">Reliability</string>
+    <string name="reliability_title">Extra reliability</string>
+    <string name="reliability_body">Allow Usage access so Pact can double-check the app in front — it makes the block harder to slip past.</string>
+    <string name="reliability_on">Usage access is on. Pact is double-checking the foreground app.</string>
+    <string name="reliability_grant">Allow Usage access</string>
+
+    <!-- reliability foreground service -->
+    <string name="notif_channel_running">Shield running</string>
+    <string name="notif_running_title">Pact is on</string>
+    <string name="notif_running_body">Keeping your limits reliably in place.</string>
+
     <!-- daily limits -->
     <string name="row_time_left">%1$d min left today</string>
     <string name="row_limit_reached">Limit reached · locked till tomorrow</string>

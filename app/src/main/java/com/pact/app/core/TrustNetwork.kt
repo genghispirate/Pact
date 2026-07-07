@@ -234,6 +234,73 @@ class TrustNetwork private constructor(context: Context) {
         return ward
     }
 
+    // ------------------------------------------------ remote (code) pairing
+
+    /**
+     * Ward side: mint a short, shareable pairing code and publish an
+     * **encrypted** copy of the same bundle a QR would carry to a rendezvous
+     * topic derived from the code. The bundle holds only public keys, an inbox,
+     * and a first name — and it's sealed with the code itself, so only someone
+     * you gave the code to can open it. Share the code over any channel; the
+     * other person types it in. No need to be in the same room.
+     */
+    fun createPairingCode(): String {
+        val code = randomPairCode()
+        val token = CryptoBox.randomNonce()
+        val tokens = activePairTokens().toMutableSet().also { it.add("$token|${System.currentTimeMillis()}") }
+        prefs.edit().putStringSet(KEY_PAIR_TOKENS, tokens).apply()
+        val bundle = JSONObject()
+            .put("n", myName.ifBlank { "Someone" })
+            .put("s", B64.encode(identity.signPublic))
+            .put("b", B64.encode(identity.boxPublic))
+            .put("i", myInbox)
+            .put("t", token)
+        val sealed = Backup.encrypt(bundle.toString(), code.toCharArray())
+        scope.launch { runCatching { transport.send(pairTopic(code), sealed) } }
+        return formatPairCode(code)
+    }
+
+    /**
+     * Supporter side: redeem a code someone shared. Fetches the sealed bundle,
+     * opens it with the code, pins their keys, and sends the pair-accept — the
+     * exact same handshake as a QR scan, just carried by a relay topic.
+     */
+    suspend fun redeemPairingCode(rawCode: String): Contact? {
+        val code = normalizePairCode(rawCode)
+        if (code.length < PAIR_CODE_LEN) return null
+        val since = System.currentTimeMillis() - 60 * 60 * 1000L
+        val messages = runCatching { transport.fetch(pairTopic(code), since) }.getOrDefault(emptyList())
+        for (m in messages.reversed()) {
+            val plain = Backup.decrypt(m.ciphertext, code.toCharArray()) ?: continue
+            val o = runCatching { JSONObject(plain) }.getOrNull() ?: continue
+            val uri = "pact://pair?v=4" +
+                "&n=" + android.net.Uri.encode(o.optString("n")) +
+                "&s=" + o.optString("s") +
+                "&b=" + o.optString("b") +
+                "&i=" + o.optString("i") +
+                "&t=" + android.net.Uri.encode(o.optString("t"))
+            acceptPairing(uri)?.let { return it }
+        }
+        return null
+    }
+
+    private fun randomPairCode(): String {
+        val rnd = java.security.SecureRandom()
+        return buildString { repeat(PAIR_CODE_LEN) { append(PAIR_ALPHABET[rnd.nextInt(PAIR_ALPHABET.length)]) } }
+    }
+
+    private fun formatPairCode(code: String): String = code.chunked(5).joinToString("-")
+
+    private fun normalizePairCode(raw: String): String =
+        raw.uppercase().map { when (it) { 'O' -> '0'; 'I', 'L' -> '1'; else -> it } }
+            .filter { it in PAIR_ALPHABET }.joinToString("")
+
+    private fun pairTopic(code: String): String {
+        val digest = java.security.MessageDigest.getInstance("SHA-256")
+            .digest(("pact-pair-$code").toByteArray())
+        return "pact" + digest.take(16).joinToString("") { "%02x".format(it) }
+    }
+
     // ----------------------------------------------------------------- chat
 
     fun sendChat(contactId: String, text: String) {
@@ -950,6 +1017,10 @@ class TrustNetwork private constructor(context: Context) {
         const val EVENT_APPROVED = "approved"
         const val EVENT_DENIED = "denied"
         const val EVENT_CHALLENGE = "challenge"
+
+        /** Crockford-style base32, dropping the letters most easily mistyped (I, L, O, U). */
+        private const val PAIR_ALPHABET = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"
+        private const val PAIR_CODE_LEN = 10
 
         private const val KEY_IDENTITY = "identity"
         private const val KEY_INBOX = "inbox"

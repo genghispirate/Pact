@@ -21,6 +21,15 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
+    <!-- Reliability: a quiet foreground service keeps the shield's process alive
+         so it can't be killed in the background; Usage Access adds a redundant
+         foreground-app detector. Both are optional; the app works without them. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission
+        android:name="android.permission.PACKAGE_USAGE_STATS"
+        tools:ignore="ProtectedPermissions" />
+
     <application
         android:name=".PactApp"
         android:allowBackup="false"
@@ -64,6 +73,15 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+
+        <service
+            android:name=".service.ShieldService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Keeps the app-blocking accessibility shield alive so locked apps stay reliably blocked in the background." />
+        </service>
 
         <receiver
             android:name=".core.RelockReceiver"

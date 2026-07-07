@@ -22,6 +22,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.Shield
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -135,6 +137,12 @@ fun SettingsScreen(state: PactState, onBack: () -> Unit) {
                 )
             }
         }
+
+        // reliability
+        Spacer(Modifier.height(20.dp))
+        SectionLabel(stringResource(R.string.settings_reliability_section))
+        Spacer(Modifier.height(8.dp))
+        ReliabilityCard()
 
         // how it works
         Spacer(Modifier.height(20.dp))
@@ -377,3 +385,54 @@ private fun BackupCard(state: PactState) {
 }
 
 private enum class BackupAction { EXPORT, IMPORT }
+
+/**
+ * Optional extra reliability: granting Usage Access lets a background poll act
+ * as a second foreground-app detector. The shield already works without it;
+ * this just makes it harder to slip past.
+ */
+@Composable
+private fun ReliabilityCard() {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val granted by androidx.compose.runtime.produceState(
+        initialValue = com.pact.app.service.ShieldService.hasUsageAccess(context)
+    ) {
+        while (true) {
+            value = com.pact.app.service.ShieldService.hasUsageAccess(context)
+            kotlinx.coroutines.delay(1500L)
+        }
+    }
+    PactCard {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                if (granted) Icons.Rounded.Check else Icons.Rounded.Shield,
+                contentDescription = null,
+                tint = if (granted) Mint else Periwinkle,
+            )
+            Spacer(Modifier.width(12.dp))
+            Column(Modifier.weight(1f)) {
+                Text(stringResource(R.string.reliability_title), style = MaterialTheme.typography.titleSmall)
+                Text(
+                    stringResource(if (granted) R.string.reliability_on else R.string.reliability_body),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = if (granted) Mint else TextSecondary,
+                )
+            }
+        }
+        if (!granted) {
+            Spacer(Modifier.height(12.dp))
+            PactButton(
+                stringResource(R.string.reliability_grant),
+                onClick = {
+                    runCatching {
+                        context.startActivity(
+                            android.content.Intent(android.provider.Settings.ACTION_USAGE_ACCESS_SETTINGS)
+                                .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                        )
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+    }
+}

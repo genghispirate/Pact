@@ -70,6 +70,13 @@ class MainActivity : ComponentActivity() {
     override fun onStart() {
         super.onStart()
         (application as? PactApp)?.acquireLiveSync()
+        // Starting from a foreground (visible) context is always allowed; the
+        // service then keeps itself (and the shield's process) alive via
+        // START_STICKY. Only the person locking their own apps needs it.
+        val snap = PactState.get(this).snapshot.value
+        if (snap.setupComplete && snap.role == PactState.Role.USER) {
+            com.pact.app.service.ShieldService.start(this)
+        }
     }
 
     override fun onStop() {

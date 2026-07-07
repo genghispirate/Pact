@@ -569,7 +569,7 @@ private fun MyNameStep(name: String, onNameChange: (String) -> Unit, onNext: () 
     }
 }
 
-/** The pairing step: show the QR, watch the circle fill in live. */
+/** The pairing step: show the QR (in person) or share a code (remote), watch the circle fill in live. */
 @Composable
 fun CircleStep(network: TrustNetwork, onNext: () -> Unit) {
     val qrContent = remember { network.pairingQrContent() }
@@ -593,6 +593,8 @@ fun CircleStep(network: TrustNetwork, onNext: () -> Unit) {
                 modifier = Modifier.size(220.dp),
             )
         }
+        Spacer(Modifier.height(16.dp))
+        InviteByCode(network)
         Spacer(Modifier.height(20.dp))
         if (supporters.isEmpty()) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -634,6 +636,66 @@ fun CircleStep(network: TrustNetwork, onNext: () -> Unit) {
             TextButton(onClick = onNext) {
                 Text(stringResource(R.string.perm_later), color = TextTertiary)
             }
+        }
+    }
+}
+
+/**
+ * Remote pairing: generate a short code and share it over any messenger. The
+ * friend doesn't need to be in the room — they type it into their Pact.
+ */
+@Composable
+fun InviteByCode(network: TrustNetwork) {
+    val context = LocalContext.current
+    var code by remember { mutableStateOf<String?>(null) }
+
+    if (code == null) {
+        androidx.compose.material3.TextButton(onClick = { code = network.createPairingCode() }) {
+            Text(stringResource(R.string.pair_code_reveal), color = Periwinkle)
+        }
+    } else {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(20.dp))
+                .background(Surface1)
+                .border(1.dp, com.pact.app.ui.theme.CardBorder, RoundedCornerShape(20.dp))
+                .padding(18.dp),
+        ) {
+            Text(
+                stringResource(R.string.pair_code_title),
+                style = MaterialTheme.typography.labelMedium,
+                color = TextTertiary,
+            )
+            Spacer(Modifier.height(8.dp))
+            Text(
+                code!!,
+                style = MaterialTheme.typography.headlineMedium,
+                color = Periwinkle,
+            )
+            Spacer(Modifier.height(6.dp))
+            Text(
+                stringResource(R.string.pair_code_hint),
+                style = MaterialTheme.typography.bodyMedium,
+                color = TextTertiary,
+                textAlign = TextAlign.Center,
+            )
+            Spacer(Modifier.height(14.dp))
+            PactButton(
+                stringResource(R.string.pair_code_share),
+                onClick = {
+                    val msg = context.getString(R.string.pair_share_message, code)
+                    context.startActivity(
+                        Intent.createChooser(
+                            Intent(Intent.ACTION_SEND).setType("text/plain")
+                                .putExtra(Intent.EXTRA_TEXT, msg),
+                            context.getString(R.string.pair_code_share),
+                        )
+                    )
+                },
+                modifier = Modifier.fillMaxWidth(),
+            )
         }
     }
 }

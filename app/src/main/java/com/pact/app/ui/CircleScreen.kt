@@ -115,6 +115,22 @@ fun CircleScreen(
 
         LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             item {
+                SectionLabel(stringResource(R.string.circle_add_section))
+                Spacer(Modifier.height(8.dp))
+                PactCard {
+                    Text(
+                        stringResource(R.string.pair_code_body),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = TextSecondary,
+                    )
+                    Spacer(Modifier.height(6.dp))
+                    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                        InviteByCode(network)
+                    }
+                }
+                Spacer(Modifier.height(6.dp))
+            }
+            item {
                 SectionLabel(stringResource(R.string.rule_section))
                 Spacer(Modifier.height(8.dp))
                 PactCard {

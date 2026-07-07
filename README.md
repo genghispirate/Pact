@@ -8,7 +8,7 @@ way to more is your **circle**, the people you trust. Then the part that makes i
 your friends **share your screen time** and **race to keep the longest streak** within your
 limits. No passwords, no accounts, no servers, no codes to type.
 
-<p align="center"><em>Ready-to-install APK: <a href="release/Pact-v5.1.apk"><code>release/Pact-v5.1.apk</code></a></em></p>
+<p align="center"><em>Ready-to-install APK: <a href="release/Pact-v5.2.apk"><code>release/Pact-v5.2.apk</code></a></em></p>
 
 ---
 
@@ -19,8 +19,9 @@ Pact has two sides, chosen on first launch:
 **If you're budgeting your apps:**
 
 1. **Choose your name and build your circle.** Add trusted people — a partner, a parent, a
-   friend, a therapist — by having them install Pact, pick "I'm a trusted person", and scan
-   your code. One scan pairs you. Add as many as you like.
+   friend, a therapist. In person, they scan your QR. Apart, you generate a **short invite code**
+   and send it over any messenger; they type it in. Either way, one step pairs you, and you can
+   add as many people as you like.
 2. **Pick your apps and set a daily limit for each.** Slide Instagram to 20 minutes, TikTok to
    10, or all the way to a hard lock. A guided, one-permission setup raises the shield; the
    accessibility service then measures your time in each app and steps in when the budget's gone.
@@ -37,9 +38,10 @@ Pact has two sides, chosen on first launch:
 
 **If you're a trusted person:**
 
-Install the same app, pick "I'm a trusted person", scan their code. Their requests land on your
-home screen — Approve, Not now, or grant a custom amount with a note. You can also just message
-them. One device can hold the trust of several people.
+Install the same app, pick "I'm a trusted person", then scan their QR or enter the invite code
+they sent you. Their requests land on your home screen — Approve, Not now, or grant a custom
+amount with a note. You can also just message them. One device can hold the trust of several
+people.
 
 ## Streaks, screen time & challenges — the social layer
 
@@ -60,7 +62,8 @@ This is what turns a willpower app into something you *want* to open:
 
 There is **no shared secret and no TOTP**. Instead, every device generates an **Ed25519**
 signing key and an **X25519** encryption key on first launch, wrapped by the hardware-backed
-Android Keystore. Public keys are exchanged once, by QR. From then on:
+Android Keystore. Public keys are exchanged once — by QR in person, or by a short code sealed with
+itself and passed through the relay when apart. From then on:
 
 - Every request, approval, and message is **signed** by its author and **sealed** (encrypted)
   to the recipient's public key. The transport only ever carries opaque ciphertext.
@@ -114,19 +117,37 @@ app and, when a locked app is over its daily budget, covers it with a full-scree
 `TYPE_ACCESSIBILITY_OVERLAY` window drawn by the service itself — not a launched activity, which
 modern Android silently blocks as a "background activity start."
 
-Detection is deliberately **self-healing**. Rather than trust one event type, every
-`WINDOW_STATE_CHANGED` **and** `WINDOWS_CHANGED` event funnels through a single idempotent
-`reconcile()` that derives the true foreground app (from `getRootInActiveWindow()` when an event's
-package is stale) and makes the wall's state match it. This fixes the classic failure mode where
-leaving a blocked app and returning left it open — some launchers never re-fire
-`WINDOW_STATE_CHANGED` on resume, but the window-layer change still does, and the reconcile
-re-asserts the wall. Daily budgets are metered by timing each app's foreground stretches and
-re-checking on a one-minute tick so the wall appears the moment the allowance is spent.
+Detection is deliberately **self-healing**, and split from metering:
+
+- **Detection** — every `WINDOW_STATE_CHANGED` **and** `WINDOWS_CHANGED` event funnels through one
+  idempotent `onForeground()` that derives the true foreground app (from `getRootInActiveWindow()`
+  when an event's package is stale) and makes the wall's state match it. This fixes the classic
+  failure where leaving a blocked app and returning left it open — some launchers never re-fire
+  `WINDOW_STATE_CHANGED` on resume, but the window-layer change still does, and the reconcile
+  re-asserts the wall.
+- **Metering** — a self-rescheduling tick books each app's foreground time and raises the wall the
+  instant the daily budget is spent, independent of whether any event fired.
+
+**Staying alive** is the other half of reliability. A quiet foreground service (`ShieldService`,
+`START_STICKY`) keeps Pact's process resident so aggressive OEM battery managers can't kill the
+watcher in the background — the most common reason blockers "just stop working." When the user
+grants **Usage Access**, that service also polls `UsageStatsManager` once a second as a *second*
+foreground-app detector, catching the rare missed event. Both are optional; the app degrades
+gracefully without them.
+
+> **Reliability ceiling.** On stock Android no tap-to-install app can be 100 % — the user can
+> disable the accessibility service, and the OS can still reclaim the process. The only
+> framework-enforced, unbypassable path is `DevicePolicyManager.setPackagesSuspended()`, which
+> requires Pact to be a **Device Owner** (provisioned via `adb` on a device with no accounts) or a
+> work-profile owner. That's a planned opt-in "maximum strength" mode for power users; the default
+> build above targets ~99 % without any special setup.
 
 ## Also included
 
 Per-app daily limits · **challenges & a live streak leaderboard** · end-to-end-encrypted
-screen-time sharing · a one-tap shareable streak card · **focus sessions** (lock everything for
+screen-time sharing · a one-tap shareable streak card · **remote pairing by short code** (or QR
+in person) · a keep-alive foreground service + optional Usage-Access redundancy · **focus
+sessions** (lock everything for
 a set stretch, no top-ups) · urge tracking · post-break reflection · an Insights screen (streak,
 walls per day, most tempting apps, craving hours, triggers) · a home-screen widget · quiet,
 actionable notifications (requests, approvals, messages, challenge invites) · encrypted
@@ -134,7 +155,7 @@ passphrase backup + stats CSV · animated, Compose-drawn illustrations · 10 lan
 
 ## Install
 
-Copy `release/Pact-v5.1.apk` to **both** phones — yours and each trusted person's — allow
+Copy `release/Pact-v5.2.apk` to **both** phones — yours and each trusted person's — allow
 "install from unknown sources", and follow the in-app setup. Requires Android 8.0+ (API 26).
 No Google services needed.
 
