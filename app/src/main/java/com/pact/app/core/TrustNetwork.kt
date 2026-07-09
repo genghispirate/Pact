@@ -207,6 +207,11 @@ class TrustNetwork private constructor(context: Context) {
         fun openIncoming() = incoming.filter { !it.decided && it.exp > System.currentTimeMillis() }
     }
 
+    // Declared before _snapshot: read() (the _snapshot initializer) touches it,
+    // and Kotlin runs property initializers top-to-bottom — so this must come first.
+    /** Live presence, held in memory only — it's meant to be fleeting. */
+    private val presenceMap = mutableMapOf<String, Presence>()
+
     private val _snapshot = MutableStateFlow(read())
     val snapshot: StateFlow<Snapshot> = _snapshot
 
@@ -441,9 +446,6 @@ class TrustNetwork private constructor(context: Context) {
         }
         prefs.edit().putLong(KEY_LAST_STATS_SHARE, now).apply()
     }
-
-    /** Live presence, held in memory only — it's meant to be fleeting. */
-    private val presenceMap = mutableMapOf<String, Presence>()
 
     /** My current one-word status, derived purely from local blocking state. */
     private fun myStatus(): String {
