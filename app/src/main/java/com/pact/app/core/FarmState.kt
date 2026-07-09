@@ -31,6 +31,12 @@ class FarmState private constructor(context: Context) {
     /** A structure your habits build. Every category maps to one part of the world. */
     data class Category(val id: String, val emoji: String, val structure: String)
 
+    /** A villager off exploring. Returns a one-off cosmetic decoration for your world. */
+    data class Expedition(val type: String, val emoji: String, val name: String, val endsAt: Long, val reward: String)
+
+    /** A kind of trip a villager can take: how long it runs and what it can bring home. */
+    data class ExpeditionType(val id: String, val emoji: String, val name: String, val minutes: Int, val rewards: List<String>)
+
     data class Snapshot(
         val points: Int = 0,
         val health: Int = 70,             // 0..100 — how lush the farm looks
@@ -39,7 +45,11 @@ class FarmState private constructor(context: Context) {
         val doneToday: Set<String> = emptySet(),
         val goodStreak: Int = 0,          // consecutive good days
         val categoryPoints: Map<String, Int> = emptyMap(),
+        val activeExpedition: Expedition? = null,
+        val decor: Set<String> = emptySet(),
     ) {
+        /** True once a villager on a trip is due back and ready to collect. */
+        val expeditionReady: Boolean get() = activeExpedition != null && System.currentTimeMillis() >= activeExpedition.endsAt
         val level: Int get() = 1 + points / LEVEL_POINTS
         val animals: Int get() = (level / 2).coerceIn(0, 6)
         val hasBarn: Boolean get() = level >= 3
@@ -105,6 +115,47 @@ class FarmState private constructor(context: Context) {
         prefs.edit().putStringSet(KEY_DONE, done).apply()
         refresh()
     }
+
+    // ------------------------------------------------------- expeditions
+
+    /** Send a villager exploring. One trip at a time; needs a habit done today. */
+    fun startExpedition(typeId: String) {
+        tickIfNeeded()
+        if (loadExpedition() != null) return
+        val today = prefs.getInt(KEY_DONE_DAY, 0) == today() && loadDone().isNotEmpty()
+        if (!today) return
+        val type = EXPEDITIONS.firstOrNull { it.id == typeId } ?: return
+        val fresh = type.rewards.filterNot { loadDecor().contains(it) }
+        val reward = (fresh.ifEmpty { type.rewards }).random()
+        val exp = Expedition(type.id, type.emoji, type.name, System.currentTimeMillis() + type.minutes * 60_000L, reward)
+        prefs.edit().putString(KEY_EXP, encodeExp(exp)).apply()
+        refresh()
+    }
+
+    /** Collect a returned villager. Adds the decoration (or points if a duplicate). */
+    fun collectExpedition(): String? {
+        val exp = loadExpedition() ?: return null
+        if (System.currentTimeMillis() < exp.endsAt) return null
+        val decor = loadDecor().toMutableSet()
+        val isNew = decor.add(exp.reward)
+        val e = prefs.edit().remove(KEY_EXP)
+        if (isNew) e.putStringSet(KEY_DECOR, decor)
+        else e.putInt(KEY_POINTS, prefs.getInt(KEY_POINTS, 0) + 15)
+        e.apply()
+        refresh()
+        return if (isNew) exp.reward else null
+    }
+
+    private fun loadExpedition(): Expedition? = runCatching {
+        val s = prefs.getString(KEY_EXP, null) ?: return null
+        val o = JSONObject(s)
+        Expedition(o.getString("t"), o.getString("e"), o.getString("n"), o.getLong("end"), o.getString("r"))
+    }.getOrNull()
+
+    private fun encodeExp(e: Expedition): String = JSONObject()
+        .put("t", e.type).put("e", e.emoji).put("n", e.name).put("end", e.endsAt).put("r", e.reward).toString()
+
+    private fun loadDecor(): Set<String> = prefs.getStringSet(KEY_DECOR, emptySet()) ?: emptySet()
 
     // --------------------------------------------------------- simulation
 
@@ -191,6 +242,8 @@ class FarmState private constructor(context: Context) {
             doneToday = if (prefs.getInt(KEY_DONE_DAY, 0) == today()) loadDone() else emptySet(),
             goodStreak = prefs.getInt(KEY_STREAK, 0),
             categoryPoints = loadCat(),
+            activeExpedition = loadExpedition(),
+            decor = loadDecor(),
         )
     }
 
@@ -263,6 +316,24 @@ class FarmState private constructor(context: Context) {
             7000 to "Fantasy Kingdom",
         )
 
+        /** Trips a villager can take. Longer trips bring home rarer decorations. */
+        val EXPEDITIONS = listOf(
+            ExpeditionType("meadow", "🌾", "Meadow walk", 30, listOf("topiary", "lantern")),
+            ExpeditionType("forest", "🌲", "Forest trek", 120, listOf("well", "statue")),
+            ExpeditionType("peaks", "⛰️", "Mountain climb", 300, listOf("fountain", "banner")),
+        )
+
+        /** Every cosmetic a villager can bring back: id → emoji + friendly name. */
+        val DECOR = listOf(
+            Triple("topiary", "🌳", "Topiary"),
+            Triple("lantern", "🏮", "Lantern"),
+            Triple("well", "🪣", "Wishing well"),
+            Triple("statue", "🗿", "Stone statue"),
+            Triple("fountain", "⛲", "Fountain"),
+            Triple("banner", "🚩", "Banner"),
+        )
+        fun decorName(id: String): String = DECOR.firstOrNull { it.first == id }?.let { "${it.second} ${it.third}" } ?: id
+
         val DEFAULT_HABITS = listOf(
             Habit("h_water", "💧", "Drink water", "garden"),
             Habit("h_move", "🏃", "Move my body", "gym"),
@@ -280,6 +351,8 @@ class FarmState private constructor(context: Context) {
         private const val KEY_STREAK = "good_streak"
         private const val KEY_SEEDED = "seeded"
         private const val KEY_CAT = "category_points"
+        private const val KEY_EXP = "expedition"
+        private const val KEY_DECOR = "decor"
 
         @Volatile private var instance: FarmState? = null
         fun get(context: Context): FarmState =

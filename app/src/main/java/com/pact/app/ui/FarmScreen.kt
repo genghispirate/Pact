@@ -44,6 +44,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -55,6 +56,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -81,6 +83,7 @@ fun FarmScreen(onBack: () -> Unit) {
     val farm = remember { FarmState.get(context) }
     val snap by farm.snapshot.collectAsState()
     var adding by remember { mutableStateOf(false) }
+    var reward by remember { mutableStateOf<String?>(null) }
     val builtCats = remember(snap) {
         (snap.habits.map { it.category } + snap.categoryPoints.keys).distinct()
             .map { FarmState.category(it) }
@@ -152,6 +155,10 @@ fun FarmScreen(onBack: () -> Unit) {
                 }
             }
 
+            // Expeditions — send a villager exploring for a cosmetic reward.
+            item { SectionLabel(stringResource(R.string.exp_section), Modifier.padding(top = 6.dp)) }
+            item { ExpeditionCard(snap, farm, onCollected = { reward = it }) }
+
             item {
                 SectionLabel(stringResource(R.string.farm_habits_label), Modifier.padding(top = 6.dp))
             }
@@ -207,6 +214,122 @@ fun FarmScreen(onBack: () -> Unit) {
     }
 
     if (adding) AddHabitDialog(onDismiss = { adding = false }, onAdd = { e, n, c -> farm.addHabit(e, n, c); adding = false })
+
+    reward?.let { r ->
+        AlertDialog(
+            onDismissRequest = { reward = null },
+            containerColor = MaterialTheme.colorScheme.surface,
+            title = { Text(stringResource(R.string.exp_reward_title), style = MaterialTheme.typography.headlineSmall) },
+            text = {
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                    Text(FarmState.DECOR.firstOrNull { it.first == r }?.second ?: "🎁", fontSize = 52.sp)
+                    Spacer(Modifier.height(8.dp))
+                    Text(stringResource(R.string.exp_reward_body, FarmState.decorName(r)), style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
+                }
+            },
+            confirmButton = { TextButton(onClick = { reward = null }) { Text(stringResource(R.string.exp_reward_ok), color = Periwinkle) } },
+        )
+    }
+}
+
+/** Send a villager exploring; watch them return with a new decoration. */
+@Composable
+private fun ExpeditionCard(snap: FarmState.Snapshot, farm: FarmState, onCollected: (String) -> Unit) {
+    val active = snap.activeExpedition
+    Column(
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Surface1)
+            .border(1.5.dp, if (active != null) Violet.copy(alpha = 0.4f) else CardBorder, RoundedCornerShape(18.dp))
+            .padding(16.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text("🧭", fontSize = 20.sp)
+            Spacer(Modifier.width(8.dp))
+            Text(stringResource(R.string.exp_title), style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
+        }
+        Spacer(Modifier.height(10.dp))
+        when {
+            active == null -> {
+                val canGo = snap.doneToday.isNotEmpty()
+                Text(
+                    stringResource(if (canGo) R.string.exp_hint else R.string.exp_need_habit),
+                    style = MaterialTheme.typography.bodyMedium, color = TextSecondary,
+                )
+                Spacer(Modifier.height(12.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    FarmState.EXPEDITIONS.forEach { type ->
+                        ExpeditionButton(type, canGo, Modifier.weight(1f)) { farm.startExpedition(type.id) }
+                    }
+                }
+            }
+            snap.expeditionReady -> {
+                Text(stringResource(R.string.exp_returned, active.name), style = MaterialTheme.typography.bodyMedium, color = Mint)
+                Spacer(Modifier.height(12.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp))
+                        .background(Brush.horizontalGradient(listOf(Violet, Periwinkle)))
+                        .clickable { farm.collectExpedition()?.let(onCollected) }
+                        .padding(vertical = 12.dp),
+                ) {
+                    Text(stringResource(R.string.exp_collect), style = MaterialTheme.typography.titleSmall, color = Ink)
+                }
+            }
+            else -> {
+                val now by produceState(System.currentTimeMillis()) {
+                    while (true) { value = System.currentTimeMillis(); kotlinx.coroutines.delay(1000) }
+                }
+                val total = (FarmState.EXPEDITIONS.firstOrNull { it.id == active.type }?.minutes ?: 60) * 60_000L
+                val remaining = (active.endsAt - now).coerceAtLeast(0L)
+                val progress = (1f - remaining.toFloat() / total).coerceIn(0f, 1f)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(active.emoji, fontSize = 22.sp)
+                    Spacer(Modifier.width(10.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text(active.name, style = MaterialTheme.typography.titleSmall)
+                        Text(stringResource(R.string.exp_back_in, formatShort(remaining)), style = MaterialTheme.typography.labelMedium, color = TextTertiary)
+                    }
+                }
+                Spacer(Modifier.height(10.dp))
+                Box(Modifier.fillMaxWidth().height(8.dp).clip(CircleShape).background(Surface2)) {
+                    Box(
+                        Modifier.fillMaxWidth(progress).height(8.dp).clip(CircleShape)
+                            .background(Brush.horizontalGradient(listOf(Violet, Periwinkle)))
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ExpeditionButton(type: FarmState.ExpeditionType, enabled: Boolean, modifier: Modifier, onGo: () -> Unit) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier
+            .clip(RoundedCornerShape(14.dp))
+            .background(if (enabled) Surface2 else Surface2.copy(alpha = 0.5f))
+            .border(1.5.dp, if (enabled) Violet.copy(alpha = 0.5f) else CardBorder, RoundedCornerShape(14.dp))
+            .then(if (enabled) Modifier.clickable { onGo() } else Modifier)
+            .padding(vertical = 12.dp, horizontal = 6.dp),
+    ) {
+        Text(type.emoji, fontSize = 22.sp)
+        Spacer(Modifier.height(4.dp))
+        Text(type.name, style = MaterialTheme.typography.labelMedium, color = if (enabled) TextSecondary else TextTertiary, maxLines = 1)
+        Text(formatShort(type.minutes * 60_000L), style = MaterialTheme.typography.labelMedium, color = if (enabled) Violet else TextTertiary)
+    }
+}
+
+/** "2h 5m" · "45m" · "<1m" — compact expedition durations. */
+private fun formatShort(ms: Long): String {
+    val mins = (ms / 60_000L).toInt()
+    if (mins <= 0) return "<1m"
+    val h = mins / 60; val m = mins % 60
+    return when {
+        h > 0 && m > 0 -> "${h}h ${m}m"
+        h > 0 -> "${h}h"
+        else -> "${m}m"
+    }
 }
 
 /** One structure in your world: its icon, name, and how grown it is. */
@@ -275,8 +398,21 @@ private fun FarmScene(snap: FarmState.Snapshot) {
             // sky + sun + drifting clouds
             drawRect(Brush.verticalGradient(listOf(Color(0xFF8FD6EC), Color(0xFFC8ECF2))), size = Size(w, gTop + 8 * u))
             drawCircle(Color(0xFFFFE7A0), radius = h * 0.055f, center = Offset(w * 0.85f, h * 0.11f))
+            // Moon Garden hangs a soft crescent + stars opposite the sun.
+            if ((snap.categoryPoints["moon"] ?: 0) > 0) {
+                drawCircle(Color(0xFFF2F2E0), h * 0.045f, Offset(w * 0.16f, h * 0.11f))
+                drawCircle(Color(0xFF9BD9EE), h * 0.045f, Offset(w * 0.145f, h * 0.095f))
+                listOf(0.30f to 0.06f, 0.42f to 0.13f, 0.26f to 0.17f).forEach { (sx, sy) ->
+                    drawRect(Color(0xCCFFFFFF), Offset(w * sx, h * sy), Size(u * 0.7f, u * 0.7f))
+                }
+            }
             cloud(w * 0.20f + w * 0.05f * sin(t), h * 0.09f, u)
             cloud(w * 0.62f + w * 0.05f * sin(t + 2f), h * 0.16f, u * 0.75f)
+            // birds drifting — the world is never quite still
+            for (b in 0..1) {
+                val bp = ((t / tau) + b * 0.5f) % 1f
+                bird(w * (0.12f + 0.76f * bp), h * (0.07f + 0.04f * b) + sin(t * 2f + b) * u, u, (sin(t * 5f + b * 2f) + 1f) / 2f)
+            }
 
             // grass
             val grass = lerp(Color(0xFF9E8C58), Color(0xFF74C24E), health)
@@ -290,16 +426,35 @@ private fun FarmScene(snap: FarmState.Snapshot) {
                 drawRect(c, Offset(w * tx + u * 1.4f, gTop + (h - gTop) * ty - u * 0.6f), Size(u, u * 1.4f))
             }
 
+            // ── the village: one labeled building per structure you've started ──
+            val built = BUILDINGS.filter { (snap.categoryPoints[it.first] ?: 0) > 0 }
+            if (built.isNotEmpty()) {
+                val n = built.size
+                built.forEachIndexed { idx, b ->
+                    val bx = w * (idx + 0.5f) / n
+                    val bw = (w / n * 0.6f).coerceIn(9 * u, 16 * u)
+                    building(b.second, b.third, bx, gTop + h * 0.11f, bw, snap.structureLevel(b.first), t, idx)
+                }
+            }
+
             // pond (left) with shimmer
-            val pcx = w * 0.15f; val pcy = h * 0.80f; val prw = w * 0.13f; val prh = h * 0.10f
+            val pcx = w * 0.13f; val pcy = h * 0.83f; val prw = w * 0.12f; val prh = h * 0.09f
             drawOval(Color(0xFF2E93CE), Offset(pcx - prw, pcy - prh), Size(prw * 2, prh * 2))
             drawOval(Color(0xFF57BDEC), Offset(pcx - prw * 0.7f, pcy - prh * 0.55f), Size(prw * 1.4f, prh * 1.1f))
             listOf(Triple(-0.3f, -0.2f, 0f), Triple(0.25f, 0.15f, 2f), Triple(-0.05f, 0.35f, 4f)).forEach { (sx, sy, ph) ->
                 if (sin(t * 2f + ph) > 0.3f) drawRect(Color(0xCCFFFFFF), Offset(pcx + sx * prw, pcy + sy * prh), Size(u, u))
             }
 
+            // forest on the left — denser as the Forest structure grows
+            val forestLvl = snap.structureLevel("forest")
+            tree(w * 0.05f, gTop + h * 0.16f, u, health, sin(t))
+            tree(w * 0.12f, gTop + h * 0.09f, u * 0.9f, health, sin(t + 1.5f))
+            if (forestLvl >= 1) tree(w * 0.19f, gTop + h * 0.18f, u * 0.78f, health, sin(t + 0.7f))
+            if (forestLvl >= 2) tree(w * 0.02f, gTop + h * 0.24f, u * 1.05f, health, sin(t + 2.2f))
+            if (forestLvl >= 3) tree(w * 0.25f, gTop + h * 0.13f, u * 0.7f, health, sin(t + 3f))
+
             // tilled field (centre) with crop rows
-            val fx = w * 0.30f; val fy = h * 0.42f; val fw = w * 0.34f; val fh = h * 0.40f
+            val fx = w * 0.30f; val fy = h * 0.45f; val fw = w * 0.34f; val fh = h * 0.38f
             drawRect(lerp(Color(0xFF6E5B3A), Color(0xFF7A5230), health), Offset(fx, fy), Size(fw, fh))
             for (r in 0..3) drawRect(Color(0x22000000), Offset(fx, fy + fh * (r + 0.5f) / 4f), Size(fw, u * 0.6f))
             val plots = snap.plots
@@ -312,12 +467,8 @@ private fun FarmScene(snap: FarmState.Snapshot) {
                 sprite(cropSprite(plots[i]), cropColors(plots[i], health, i), cxp - 4 * u + sway, cyp - 7 * u, u)
             }
 
-            // trees (sway)
-            tree(w * 0.045f, gTop + h * 0.10f, u, health, sin(t))
-            tree(w * 0.70f, gTop + h * 0.06f, u * 0.9f, health, sin(t + 1.5f))
-
-            // a house being built, or the finished house with chimney smoke
-            val hx = w * 0.74f; val hy = h * 0.50f
+            // home — under construction until you level up, then chimney smoke
+            val hx = w * 0.75f; val hy = h * 0.55f
             if (snap.hasHouse) {
                 sprite(HOUSE, houseColors(health), hx, hy, u)
                 for (k in 0..2) {
@@ -331,6 +482,16 @@ private fun FarmScene(snap: FarmState.Snapshot) {
                 sprite(farmerFrame(0, false), farmerColors(), hx - 4 * u, hy + 2 * u - ham, u)
             }
 
+            // flowers dot the foreground — more of them as the Garden grows
+            val gardenLvl = snap.structureLevel("garden")
+            val flowerSpots = listOf(0.30f to 0.93f, 0.46f to 0.98f, 0.60f to 0.92f, 0.68f to 0.98f, 0.40f to 0.9f, 0.54f to 0.99f)
+            flowerSpots.take((2 + gardenLvl * 2).coerceIn(2, flowerSpots.size)).forEachIndexed { idx, sp ->
+                flower(w * sp.first, gTop + (h - gTop) * sp.second, u, idx, health, sin(t + idx))
+            }
+
+            // decorations villagers have brought home from expeditions
+            snap.decor.forEach { decorItem(it, w, h, u, t) }
+
             // chickens hop near the front
             repeat(snap.animals.coerceAtMost(3)) { a ->
                 val cx = w * (0.30f + 0.12f * a)
@@ -342,7 +503,7 @@ private fun FarmScene(snap: FarmState.Snapshot) {
             val pos = if (trip < 0.5f) trip * 2f else (1f - trip) * 2f
             val facingRight = trip < 0.5f
             val fxp = w * 0.34f + (w * 0.60f - w * 0.34f) * pos
-            val fyp = h * 0.66f
+            val fyp = h * 0.70f
             val step = ((t / (tau / 4f)).toInt() % 2)   // 2-frame walk cycle
             sprite(farmerFrame(step, facingRight), farmerColors(), fxp, fyp, u, flip = !facingRight)
             // watering can + drops
@@ -354,6 +515,129 @@ private fun FarmScene(snap: FarmState.Snapshot) {
             }
         }
     }
+}
+
+/** Categories that show up as a building in the world (garden→field, forest→trees,
+ *  moon→moon are drawn elsewhere). id → emoji sign → roof colour. */
+private val BUILDINGS = listOf(
+    Triple("library", "📚", Color(0xFF4A6BB0)),
+    Triple("gym", "🏋️", Color(0xFFD0574E)),
+    Triple("temple", "🧘", Color(0xFF7C5CFF)),
+    Triple("workshop", "💻", Color(0xFF35998E)),
+    Triple("bakery", "🍳", Color(0xFFE0956B)),
+    Triple("school", "🗣️", Color(0xFF4E9A46)),
+)
+
+/** A little pixel building for one structure — coloured roof, glowing windows that
+ *  multiply with its level, and its emoji on a bobbing sign so the world reads as
+ *  a labeled, growing town rather than an anonymous blob. */
+private fun DrawScope.building(emoji: String, roof: Color, cx: Float, baseY: Float, bw: Float, level: Int, t: Float, seed: Int) {
+    val unit = bw / 14f
+    val bh = 9f * unit
+    val x = cx - bw / 2f
+    val top = baseY - bh
+    // wall, top trim, base shadow
+    drawRect(Color(0xFFEFE2C4), Offset(x, top), Size(bw, bh))
+    drawRect(Color(0xFFCBB98C), Offset(x, top), Size(bw, unit))
+    drawRect(Color(0xFF9C8A5E), Offset(x, baseY - unit), Size(bw, unit))
+    // stepped roof
+    val steps = 4
+    for (s in 0 until steps) {
+        val inset = (bw / 2f) * s / steps
+        drawRect(roof, Offset(x + inset, top - (steps - s) * unit), Size(bw - inset * 2, unit + 0.6f))
+    }
+    // door + knob
+    drawRect(Color(0xFF6B4A2C), Offset(cx - 1.4f * unit, baseY - 4f * unit), Size(2.8f * unit, 4f * unit))
+    drawRect(Color(0xFFE7C868), Offset(cx + 0.6f * unit, baseY - 2.2f * unit), Size(0.7f * unit, 0.7f * unit))
+    // glowing windows — one more per level
+    val wins = (1 + level).coerceIn(1, 3)
+    for (wi in 0 until wins) {
+        val wx = x + bw * (wi + 1f) / (wins + 1f) - unit
+        drawRect(Color(0xFFFFE08A), Offset(wx, top + 2.4f * unit), Size(2f * unit, 2f * unit))
+        drawRect(Color(0x33000000), Offset(wx, top + 3.1f * unit), Size(2f * unit, unit * 0.4f))
+    }
+    // emoji sign, bobbing gently
+    val bob = sin(t + seed) * 0.6f * unit
+    val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+        textSize = 4.4f * unit
+        textAlign = android.graphics.Paint.Align.CENTER
+    }
+    drawContext.canvas.nativeCanvas.drawText(emoji, cx, top - steps * unit - 1.4f * unit + bob, paint)
+}
+
+/** Cosmetic decorations brought home by villagers. Each sits at a fixed spot so
+ *  the world's layout stays stable as it fills in. */
+private fun DrawScope.decorItem(id: String, w: Float, h: Float, u: Float, t: Float) {
+    val tau = (2 * Math.PI).toFloat()
+    when (id) {
+        "topiary" -> {
+            val x = w * 0.23f; val y = h * 0.80f
+            drawRect(Color(0xFF6E4A2A), Offset(x - u, y), Size(2f * u, 4f * u))
+            drawOval(Color(0xFF3E8B3A), Offset(x - 4 * u, y - 8 * u), Size(8 * u, 8 * u))
+            drawOval(Color(0xFF57AD45), Offset(x - 2.5f * u, y - 7 * u), Size(4 * u, 4 * u))
+        }
+        "lantern" -> {
+            val x = w * 0.66f; val y = h * 0.68f
+            drawRect(Color(0xFF6E5236), Offset(x - 0.4f * u, y), Size(0.8f * u, 6 * u))
+            val glow = 0.55f + 0.45f * ((sin(t * 2f) + 1f) / 2f)
+            drawOval(Color(0xFFE0554E), Offset(x - 2.4f * u, y - 4 * u), Size(4.8f * u, 4.5f * u))
+            drawOval(Color(0xFFFFE08A).copy(alpha = glow), Offset(x - 1.2f * u, y - 3f * u), Size(2.4f * u, 2.4f * u))
+        }
+        "well" -> {
+            val x = w * 0.19f; val y = h * 0.68f
+            drawRect(Color(0xFF9AA0A6), Offset(x - 3 * u, y - 2 * u), Size(6 * u, 4 * u))
+            drawOval(Color(0xFF2E93CE), Offset(x - 2 * u, y - 3 * u), Size(4 * u, 2.4f * u))
+            drawRect(Color(0xFF6E4A2A), Offset(x - 3 * u, y - 8 * u), Size(0.9f * u, 6 * u))
+            drawRect(Color(0xFF6E4A2A), Offset(x + 2.1f * u, y - 8 * u), Size(0.9f * u, 6 * u))
+            drawRect(Color(0xFFC85A54), Offset(x - 4 * u, y - 9 * u), Size(8 * u, 2 * u))
+        }
+        "statue" -> {
+            val x = w * 0.87f; val y = h * 0.9f
+            drawRect(Color(0xFF8A8F96), Offset(x - 2.5f * u, y - 1.5f * u), Size(5 * u, 3 * u))
+            drawRect(Color(0xFFB6BCC4), Offset(x - 1.5f * u, y - 8 * u), Size(3 * u, 6.5f * u))
+            drawOval(Color(0xFFC7CDD4), Offset(x - 1.6f * u, y - 10.5f * u), Size(3.2f * u, 3.2f * u))
+        }
+        "fountain" -> {
+            val x = w * 0.6f; val y = h * 0.94f
+            drawOval(Color(0xFF9AA0A6), Offset(x - 5 * u, y - 2 * u), Size(10 * u, 4 * u))
+            drawOval(Color(0xFF57BDEC), Offset(x - 4 * u, y - 1.5f * u), Size(8 * u, 3 * u))
+            drawRect(Color(0xFF9AA0A6), Offset(x - 0.8f * u, y - 6 * u), Size(1.6f * u, 4 * u))
+            for (d in 0..2) {
+                val dp = ((t / tau) + d * 0.33f) % 1f
+                drawRect(Color(0xCC9BD9EE), Offset(x - 1.5f * u + d * u, y - 7 * u + dp * 3 * u), Size(u * 0.7f, u * 0.7f))
+            }
+        }
+        "banner" -> {
+            val x = w * 0.94f; val y = h * 0.52f
+            drawRect(Color(0xFF6E5236), Offset(x, y), Size(0.9f * u, 12 * u))
+            val wave = sin(t * 2f) * u
+            drawRect(Color(0xFF7C5CFF), Offset(x - 6 * u + wave, y), Size(6 * u, 5 * u))
+            drawRect(Color(0xFFA78BFA), Offset(x - 6 * u + wave, y + 1.5f * u), Size(6 * u, 1.5f * u))
+        }
+    }
+}
+
+/** A tiny bird: two wings that flap with [flap] (0..1). */
+private fun DrawScope.bird(x: Float, y: Float, u: Float, flap: Float) {
+    val c = Color(0xCC33333F)
+    val lift = flap * 1.4f * u
+    drawRect(c, Offset(x - 2.6f * u, y - lift * 0.4f), Size(2.4f * u, u * 0.7f))
+    drawRect(c, Offset(x - 2.6f * u, y - lift), Size(u * 0.9f, u * 0.7f))
+    drawRect(c, Offset(x + 0.2f * u, y - lift * 0.4f), Size(2.4f * u, u * 0.7f))
+    drawRect(c, Offset(x + 1.7f * u, y - lift), Size(u * 0.9f, u * 0.7f))
+}
+
+/** A little four-petal flower on a stem that sways; fades wan when neglected. */
+private fun DrawScope.flower(x: Float, y: Float, u: Float, i: Int, health: Float, sway: Float) {
+    val petal = wilt(listOf(Color(0xFFE86FA6), Color(0xFFFFD36B), Color(0xFFB58BFF), Color(0xFFFF9BB3))[i % 4], health)
+    val stem = wilt(Color(0xFF4E9A32), health)
+    drawRect(stem, Offset(x, y), Size(u * 0.7f, u * 2.2f))
+    val cx = x + sway * 0.5f * u
+    drawRect(petal, Offset(cx - u, y - u), Size(u, u))
+    drawRect(petal, Offset(cx + u * 0.3f, y - u), Size(u, u))
+    drawRect(petal, Offset(cx - u * 0.35f, y - u * 1.8f), Size(u, u))
+    drawRect(petal, Offset(cx - u * 0.35f, y - u * 0.2f), Size(u, u))
+    drawRect(Color(0xFFFFF0A0), Offset(cx - u * 0.35f, y - u), Size(u, u))
 }
 
 private fun DrawScope.sprite(rows: List<String>, colors: Map<Char, Color>, x: Float, y: Float, px: Float, flip: Boolean = false) {

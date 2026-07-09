@@ -8,7 +8,7 @@ way to more is your **circle**, the people you trust. Then the part that makes i
 your friends **share your screen time** and **race to keep the longest streak** within your
 limits. No passwords, no accounts, no servers, no codes to type.
 
-<p align="center"><em>Ready-to-install APK: <a href="release/Pact-v5.13.apk"><code>release/Pact-v5.13.apk</code></a></em></p>
+<p align="center"><em>Ready-to-install APK: <a href="release/Pact-v5.14.apk"><code>release/Pact-v5.14.apk</code></a></em></p>
 
 ---
 
@@ -62,21 +62,28 @@ This is what turns a willpower app into something you *want* to open:
 
 Blocking is the strict edge; the **farm** is the heart. It's a **living, animated pixel farm**
 (drawn entirely in Compose — no assets) where there's always something happening: a little farmer
-walks the field and waters the crops, a pond shimmers, clouds drift, crops and trees sway, chimney
-smoke rises (and a house is mid-construction until you level up). It thrives when you look after
-yourself and gently wilts when you don't. **No guilt, no blocking** — just care:
+walks the field and waters the crops, birds drift across the sky, a pond and a fountain shimmer,
+clouds pass, crops and trees sway, chimney smoke rises (and a house is mid-construction until you
+level up). It thrives when you look after yourself and gently wilts when you don't. **No guilt, no
+blocking** — just care:
 
-- **Every habit builds a specific structure.** Habits are tagged by category, and each grows its
-  own part of the world — reading raises a **Library**, exercise a **Gym**, meditation a **Temple**,
-  sleep a **Moon Garden**, walking a **Forest**, and so on. "Your World" shows each structure and
-  its level, so progress is always visible without a rewards menu.
+- **Every habit builds a specific structure, and you can see it.** Habits are tagged by category,
+  and each grows its own part of the world — reading raises a **Library**, exercise a **Gym**,
+  meditation a **Temple**, sleep a **Moon Garden** (a crescent and stars hang over the world),
+  walking a **Forest** (denser with every level), and so on. Each structure appears in the scene
+  as a little labeled pixel building with glowing windows that multiply as it grows, and "Your
+  World" lists each one and its level — progress is always visible, no rewards menu.
+- **Send villagers on expeditions.** Once you've checked off a habit, dispatch a villager on a
+  Meadow walk, Forest trek, or Mountain climb. They come back — after real time — with a **one-off
+  cosmetic** for your world: a topiary, a lantern, a wishing well, a stone statue, a fountain, a
+  banner. Purely decorative, so no two worlds look alike; the world *is* the reward.
 - **The world advances through eras** purely by building, never by spending: Clearing → Garden →
   Farm → Village → Town → City → Nature Reserve → Floating Isles → Fantasy Kingdom.
 - **Neglect wilts it.** Skip your days and health drops, colours fade toward a wan brown, and a
   plot occasionally withers — recoverable the moment you come back.
 - It's a small, deterministic idle sim advanced one day at a time, entirely local. The circle is
-  now an **optional** accountability mode layered on top, not the core. A shared world, seasons,
-  and villager expeditions are the roadmap.
+  now an **optional** accountability mode layered on top, not the core. A shared world and seasons
+  are the roadmap.
 
 ## The trust model — public-key cryptography, zero setup
 
@@ -168,7 +175,9 @@ A **deep-black interface with a violet hero accent** (a premium OLED palette —
 green for good/online, coral for stop) and a **bottom nav with a raised Farm button** · a first-launch **language drop-in** (10 languages, applied per-app, no system
 trip) · **emoji squad avatars** exchanged at pairing · a home **co-op tower** that grows with the
 squad's combined streak · per-app daily limits · **challenges & a live streak leaderboard** ·
-end-to-end-encrypted screen-time sharing · **live squad presence** (a coarse, short-lived
+end-to-end-encrypted screen-time sharing · **accurate device-wide screen time** (via
+`UsageStatsManager` when Usage Access is granted, falling back to an on-device estimate) ·
+**villager expeditions** that return cosmetic decorations · **live squad presence** (a coarse, short-lived
 in-the-zone / off-track / idle status, no app names) · **unlock requests as interactive
 "Lockbox" widgets inside the chat** (grant/deny after the roast, flip-to-green) · confetti,
 haptics, and a pulsing co-op tower · a one-tap shareable streak card · a **weekly Receipt** (a
@@ -182,7 +191,7 @@ passphrase backup + stats CSV · animated, Compose-drawn illustrations · 10 lan
 
 ## Install
 
-Copy `release/Pact-v5.13.apk` to **both** phones — yours and each trusted person's — allow
+Copy `release/Pact-v5.14.apk` to **both** phones — yours and each trusted person's — allow
 "install from unknown sources", and follow the in-app setup. Requires Android 8.0+ (API 26).
 No Google services needed.
 

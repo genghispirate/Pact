@@ -104,6 +104,13 @@ fun HomeScreen(
     val snapshot by state.snapshot.collectAsState()
     val netSnap by network.snapshot.collectAsState()
     val now by rememberNow()
+    // Accurate device screen time (UsageStatsManager) when granted; else the estimate.
+    val accurateScreen by produceState(initialValue = -1) {
+        while (true) {
+            value = com.pact.app.core.UsageTracker.screenTimeTodayMinutes(context)
+            delay(20_000L)
+        }
+    }
     val serviceOn by produceState(initialValue = BlockerService.isEnabled(context)) {
         while (true) {
             value = BlockerService.isEnabled(context)
@@ -213,7 +220,7 @@ fun HomeScreen(
                 HeroCard(
                     serviceOn = serviceOn,
                     lockedCount = snapshot.blocked.size,
-                    screenTimeToday = snapshot.screenTimeTodayMinutes(),
+                    screenTimeToday = if (accurateScreen >= 0) accurateScreen else snapshot.screenTimeTodayMinutes(),
                     streakDays = snapshot.streakDays(now),
                     onEnable = {
                         context.startActivity(
