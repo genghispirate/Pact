@@ -31,6 +31,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.OpenInFull
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -84,6 +85,7 @@ fun FarmScreen(onBack: () -> Unit) {
     val snap by farm.snapshot.collectAsState()
     var adding by remember { mutableStateOf(false) }
     var reward by remember { mutableStateOf<String?>(null) }
+    var showWorld by remember { mutableStateOf(false) }
     val builtCats = remember(snap) {
         (snap.habits.map { it.category } + snap.categoryPoints.keys).distinct()
             .map { FarmState.category(it) }
@@ -116,7 +118,26 @@ fun FarmScreen(onBack: () -> Unit) {
         }
 
         LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            item { FarmScene(snap) }
+            item {
+                Box(
+                    Modifier.fillMaxWidth().height(320.dp).clip(RoundedCornerShape(20.dp))
+                        .border(1.5.dp, CardBorder, RoundedCornerShape(20.dp)),
+                ) {
+                    WorldDiorama(snap, Modifier.fillMaxSize())
+                    // tap-to-expand into the immersive full-screen world
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.align(Alignment.BottomEnd).padding(12.dp)
+                            .clip(RoundedCornerShape(50)).background(Color.White.copy(alpha = 0.14f))
+                            .border(1.dp, Color.White.copy(alpha = 0.2f), RoundedCornerShape(50))
+                            .clickable { showWorld = true }.padding(horizontal = 14.dp, vertical = 8.dp),
+                    ) {
+                        Icon(Icons.Rounded.OpenInFull, contentDescription = null, tint = Color.White, modifier = Modifier.size(15.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text(stringResource(R.string.world_enter), style = MaterialTheme.typography.labelMedium, color = Color.White)
+                    }
+                }
+            }
 
             item {
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -212,6 +233,8 @@ fun FarmScreen(onBack: () -> Unit) {
             item { Spacer(Modifier.height(24.dp)) }
         }
     }
+
+    if (showWorld) WorldScreen(snap, onClose = { showWorld = false })
 
     if (adding) AddHabitDialog(onDismiss = { adding = false }, onAdd = { e, n, c -> farm.addHabit(e, n, c); adding = false })
 

@@ -200,6 +200,7 @@
     <string name="farm_home_banner">Your world · Lv %1$d</string>
     <string name="farm_home_sub">%1$d 🌱 · tend it →</string>
     <string name="world_stage">%1$s</string>
+    <string name="world_enter">Enter world</string>
     <string name="world_section">Your world</string>
     <string name="world_builds">This habit builds…</string>
 
