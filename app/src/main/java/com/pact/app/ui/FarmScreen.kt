@@ -71,14 +71,21 @@ import com.pact.app.ui.theme.Surface1
 import com.pact.app.ui.theme.Surface2
 import com.pact.app.ui.theme.TextSecondary
 import com.pact.app.ui.theme.TextTertiary
+import com.pact.app.ui.theme.Violet
 import kotlin.math.sin
 
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 fun FarmScreen(onBack: () -> Unit) {
     val context = LocalContext.current
     val farm = remember { FarmState.get(context) }
     val snap by farm.snapshot.collectAsState()
     var adding by remember { mutableStateOf(false) }
+    val builtCats = remember(snap) {
+        (snap.habits.map { it.category } + snap.categoryPoints.keys).distinct()
+            .map { FarmState.category(it) }
+            .sortedByDescending { snap.categoryPoints[it.id] ?: 0 }
+    }
 
     Column(
         modifier = Modifier
@@ -94,7 +101,14 @@ fun FarmScreen(onBack: () -> Unit) {
             IconButton(onClick = onBack) {
                 Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = stringResource(R.string.common_back), tint = TextSecondary)
             }
-            Text(stringResource(R.string.farm_title), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.weight(1f))
+            Column(Modifier.weight(1f)) {
+                Text(stringResource(R.string.farm_title), style = MaterialTheme.typography.headlineSmall)
+                Text(
+                    stringResource(R.string.world_stage, snap.stageName),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = Violet,
+                )
+            }
             Text("🌱 ${snap.points}", style = MaterialTheme.typography.titleMedium, color = Mint)
         }
 
@@ -121,6 +135,19 @@ fun FarmScreen(onBack: () -> Unit) {
                                 .height(10.dp).clip(CircleShape)
                                 .background(Brush.horizontalGradient(listOf(Mint, Periwinkle)))
                         )
+                    }
+                }
+            }
+
+            // Your World — every habit builds a specific structure here.
+            if (builtCats.isNotEmpty()) {
+                item { SectionLabel(stringResource(R.string.world_section), Modifier.padding(top = 6.dp)) }
+                item {
+                    androidx.compose.foundation.layout.FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                    ) {
+                        builtCats.forEach { cat -> StructureChip(cat, snap.structureLevel(cat.id), snap.structureProgress(cat.id)) }
                     }
                 }
             }
@@ -179,7 +206,36 @@ fun FarmScreen(onBack: () -> Unit) {
         }
     }
 
-    if (adding) AddHabitDialog(onDismiss = { adding = false }, onAdd = { e, n -> farm.addHabit(e, n); adding = false })
+    if (adding) AddHabitDialog(onDismiss = { adding = false }, onAdd = { e, n, c -> farm.addHabit(e, n, c); adding = false })
+}
+
+/** One structure in your world: its icon, name, and how grown it is. */
+@Composable
+private fun StructureChip(cat: FarmState.Category, level: Int, progress: Float) {
+    val started = level > 0 || progress > 0f
+    Column(
+        modifier = Modifier
+            .width(104.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .background(Surface1)
+            .border(1.5.dp, if (started) Violet.copy(alpha = 0.5f) else CardBorder, RoundedCornerShape(16.dp))
+            .padding(12.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(cat.emoji, fontSize = 20.sp)
+            Spacer(Modifier.width(6.dp))
+            Text("Lv $level", style = MaterialTheme.typography.labelMedium, color = if (started) Violet else TextTertiary)
+        }
+        Spacer(Modifier.height(6.dp))
+        Text(cat.structure, style = MaterialTheme.typography.titleSmall, maxLines = 1)
+        Spacer(Modifier.height(8.dp))
+        Box(Modifier.fillMaxWidth().height(5.dp).clip(CircleShape).background(Surface2)) {
+            Box(
+                Modifier.fillMaxWidth(progress.coerceIn(0f, 1f)).height(5.dp).clip(CircleShape)
+                    .background(Brush.horizontalGradient(listOf(Violet, Periwinkle)))
+            )
+        }
+    }
 }
 
 @Composable
@@ -380,10 +436,11 @@ private val HOUSE = listOf(
 )
 
 @Composable
-private fun AddHabitDialog(onDismiss: () -> Unit, onAdd: (String, String) -> Unit) {
+private fun AddHabitDialog(onDismiss: () -> Unit, onAdd: (String, String, String) -> Unit) {
     val emojis = listOf("💧", "🏃", "📖", "😴", "🧘", "🥗", "☀️", "✍️", "🎧", "🚿", "🙏", "🎯")
     var emoji by remember { mutableStateOf(emojis.first()) }
     var name by remember { mutableStateOf("") }
+    var category by remember { mutableStateOf(FarmState.CATEGORIES.first().id) }
     AlertDialog(
         onDismissRequest = onDismiss,
         containerColor = MaterialTheme.colorScheme.surface,
@@ -409,10 +466,29 @@ private fun AddHabitDialog(onDismiss: () -> Unit, onAdd: (String, String) -> Uni
                     shape = RoundedCornerShape(14.dp),
                     colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Periwinkle, unfocusedBorderColor = Surface2),
                 )
+                Spacer(Modifier.height(14.dp))
+                Text(stringResource(R.string.world_builds), style = MaterialTheme.typography.labelMedium, color = TextTertiary)
+                Spacer(Modifier.height(8.dp))
+                androidx.compose.foundation.lazy.LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    items(FarmState.CATEGORIES) { c ->
+                        val on = c.id == category
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.width(66.dp).clip(RoundedCornerShape(12.dp))
+                                .background(if (on) Violet.copy(alpha = 0.18f) else Surface2)
+                                .border(if (on) 2.dp else 1.dp, if (on) Violet else CardBorder, RoundedCornerShape(12.dp))
+                                .clickable { category = c.id }
+                                .padding(vertical = 8.dp),
+                        ) {
+                            Text(c.emoji, fontSize = 20.sp)
+                            Text(c.structure, style = MaterialTheme.typography.labelMedium, color = if (on) Violet else TextTertiary, maxLines = 1)
+                        }
+                    }
+                }
             }
         },
         confirmButton = {
-            TextButton(enabled = name.isNotBlank(), onClick = { onAdd(emoji, name.trim()) }) {
+            TextButton(enabled = name.isNotBlank(), onClick = { onAdd(emoji, name.trim(), category) }) {
                 Text(stringResource(R.string.farm_add), color = Periwinkle)
             }
         },

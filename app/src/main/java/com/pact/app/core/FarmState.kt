@@ -25,7 +25,11 @@ class FarmState private constructor(context: Context) {
     private val prefs: SharedPreferences =
         appContext.getSharedPreferences("pact_farm", Context.MODE_PRIVATE)
 
-    data class Habit(val id: String, val emoji: String, val name: String)
+    /** Each habit belongs to a category, and that category grows one structure in your world. */
+    data class Habit(val id: String, val emoji: String, val name: String, val category: String = "garden")
+
+    /** A structure your habits build. Every category maps to one part of the world. */
+    data class Category(val id: String, val emoji: String, val structure: String)
 
     data class Snapshot(
         val points: Int = 0,
@@ -34,6 +38,7 @@ class FarmState private constructor(context: Context) {
         val habits: List<Habit> = emptyList(),
         val doneToday: Set<String> = emptySet(),
         val goodStreak: Int = 0,          // consecutive good days
+        val categoryPoints: Map<String, Int> = emptyMap(),
     ) {
         val level: Int get() = 1 + points / LEVEL_POINTS
         val animals: Int get() = (level / 2).coerceIn(0, 6)
@@ -41,6 +46,18 @@ class FarmState private constructor(context: Context) {
         val hasHouse: Boolean get() = level >= 5
         val progressInLevel: Float get() = (points % LEVEL_POINTS).toFloat() / LEVEL_POINTS
         fun habitsDoneToday(): Int = doneToday.size
+
+        /** How grown a structure is (0 = not started). */
+        fun structureLevel(category: String): Int = (categoryPoints[category] ?: 0) / STRUCTURE_POINTS
+        fun structureProgress(category: String): Float =
+            ((categoryPoints[category] ?: 0) % STRUCTURE_POINTS).toFloat() / STRUCTURE_POINTS
+        /** How many distinct structures have been started — drives the world stage. */
+        fun structuresBuilt(): Int = categoryPoints.count { it.value >= STRUCTURE_POINTS }
+
+        /** The world's current era, from a clearing up to a fantasy kingdom. */
+        val stageIndex: Int get() = STAGES.indexOfLast { points >= it.first }.coerceAtLeast(0)
+        val stageName: String get() = STAGES[stageIndex].second
+        val nextStagePoints: Int? get() = STAGES.getOrNull(stageIndex + 1)?.first
     }
 
     private val _snapshot = MutableStateFlow(read())
@@ -50,6 +67,7 @@ class FarmState private constructor(context: Context) {
 
     fun toggleHabit(id: String) {
         tickIfNeeded()
+        val category = loadHabits().firstOrNull { it.id == id }?.category ?: "garden"
         val done = loadDone().toMutableSet()
         val delta: Int
         if (done.contains(id)) {
@@ -58,21 +76,25 @@ class FarmState private constructor(context: Context) {
             done.add(id); delta = HABIT_POINTS
         }
         val points = (prefs.getInt(KEY_POINTS, 0) + delta).coerceAtLeast(0)
-        // Tending the farm today gives it a little life back immediately.
+        // The habit's category grows its own structure in the world.
+        val cat = loadCat().toMutableMap()
+        cat[category] = ((cat[category] ?: 0) + delta).coerceAtLeast(0)
+        // Tending the world today gives it a little life back immediately.
         val health = (prefs.getInt(KEY_HEALTH, 70) + if (delta > 0) 3 else -3).coerceIn(0, 100)
         prefs.edit()
             .putInt(KEY_POINTS, points)
             .putInt(KEY_HEALTH, health)
             .putStringSet(KEY_DONE, done)
             .putInt(KEY_DONE_DAY, today())
+            .putString(KEY_CAT, encodeCat(cat))
             .apply()
         refresh()
     }
 
-    fun addHabit(emoji: String, name: String) {
+    fun addHabit(emoji: String, name: String, category: String = "garden") {
         val habits = loadHabits().toMutableList()
         if (habits.size >= 12) return
-        habits += Habit(java.util.UUID.randomUUID().toString(), emoji, name.trim())
+        habits += Habit(java.util.UUID.randomUUID().toString(), emoji, name.trim(), category)
         saveHabits(habits)
         refresh()
     }
@@ -168,7 +190,19 @@ class FarmState private constructor(context: Context) {
             habits = loadHabits(),
             doneToday = if (prefs.getInt(KEY_DONE_DAY, 0) == today()) loadDone() else emptySet(),
             goodStreak = prefs.getInt(KEY_STREAK, 0),
+            categoryPoints = loadCat(),
         )
+    }
+
+    private fun loadCat(): Map<String, Int> = runCatching {
+        val o = JSONObject(prefs.getString(KEY_CAT, "{}") ?: "{}")
+        o.keys().asSequence().associateWith { o.getInt(it) }
+    }.getOrDefault(emptyMap())
+
+    private fun encodeCat(map: Map<String, Int>): String {
+        val o = JSONObject()
+        for ((k, v) in map) o.put(k, v)
+        return o.toString()
     }
 
     private fun loadPlots(): List<Int> =
@@ -182,13 +216,13 @@ class FarmState private constructor(context: Context) {
         val arr = JSONArray(prefs.getString(KEY_HABITS, "[]") ?: "[]")
         (0 until arr.length()).map { i ->
             val o = arr.getJSONObject(i)
-            Habit(o.getString("id"), o.getString("e"), o.getString("n"))
+            Habit(o.getString("id"), o.getString("e"), o.getString("n"), o.optString("c", "garden"))
         }
     }.getOrDefault(emptyList())
 
     private fun saveHabits(habits: List<Habit>) {
         val arr = JSONArray()
-        for (h in habits) arr.put(JSONObject().put("id", h.id).put("e", h.emoji).put("n", h.name))
+        for (h in habits) arr.put(JSONObject().put("id", h.id).put("e", h.emoji).put("n", h.name).put("c", h.category))
         prefs.edit().putString(KEY_HABITS, arr.toString()).apply()
     }
 
@@ -200,12 +234,40 @@ class FarmState private constructor(context: Context) {
         const val PASSIVE_POINTS = 6
         const val HARVEST_POINTS = 20
         const val GRID = 12
+        const val STRUCTURE_POINTS = 40   // points to raise a structure one level
+
+        /** Every category grows one specific structure in your world. */
+        val CATEGORIES = listOf(
+            Category("garden", "🌱", "Garden"),
+            Category("gym", "🏋️", "Gym"),
+            Category("library", "📚", "Library"),
+            Category("temple", "🧘", "Temple"),
+            Category("forest", "🌳", "Forest"),
+            Category("workshop", "💻", "Workshop"),
+            Category("bakery", "🍳", "Bakery"),
+            Category("school", "🗣️", "School"),
+            Category("moon", "😴", "Moon Garden"),
+        )
+        fun category(id: String): Category = CATEGORIES.firstOrNull { it.id == id } ?: CATEGORIES.first()
+
+        /** The world's eras — reached purely by building, never by spending. */
+        val STAGES = listOf(
+            0 to "Clearing",
+            80 to "Garden",
+            220 to "Farm",
+            480 to "Village",
+            900 to "Town",
+            1600 to "City",
+            2800 to "Nature Reserve",
+            4500 to "Floating Isles",
+            7000 to "Fantasy Kingdom",
+        )
 
         val DEFAULT_HABITS = listOf(
-            Habit("h_water", "💧", "Drink water"),
-            Habit("h_move", "🏃", "Move my body"),
-            Habit("h_read", "📖", "Read 10 min"),
-            Habit("h_sleep", "😴", "Sleep early"),
+            Habit("h_water", "💧", "Drink water", "garden"),
+            Habit("h_move", "🏃", "Move my body", "gym"),
+            Habit("h_read", "📖", "Read 10 min", "library"),
+            Habit("h_sleep", "😴", "Sleep early", "moon"),
         )
 
         private const val KEY_POINTS = "points"
@@ -217,6 +279,7 @@ class FarmState private constructor(context: Context) {
         private const val KEY_TICK_DAY = "tick_day"
         private const val KEY_STREAK = "good_streak"
         private const val KEY_SEEDED = "seeded"
+        private const val KEY_CAT = "category_points"
 
         @Volatile private var instance: FarmState? = null
         fun get(context: Context): FarmState =

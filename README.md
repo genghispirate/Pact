@@ -8,7 +8,7 @@ way to more is your **circle**, the people you trust. Then the part that makes i
 your friends **share your screen time** and **race to keep the longest streak** within your
 limits. No passwords, no accounts, no servers, no codes to type.
 
-<p align="center"><em>Ready-to-install APK: <a href="release/Pact-v5.12.apk"><code>release/Pact-v5.12.apk</code></a></em></p>
+<p align="center"><em>Ready-to-install APK: <a href="release/Pact-v5.13.apk"><code>release/Pact-v5.13.apk</code></a></em></p>
 
 ---
 
@@ -66,13 +66,17 @@ walks the field and waters the crops, a pond shimmers, clouds drift, crops and t
 smoke rises (and a house is mid-construction until you level up). It thrives when you look after
 yourself and gently wilts when you don't. **No guilt, no blocking** — just care:
 
-- **Habits drive it.** Check off your daily habits (drink water, move, read, sleep early, or your
-  own) and earn points; crops sprout and climb through growth stages, animals arrive, a barn and
-  a house go up as you level.
+- **Every habit builds a specific structure.** Habits are tagged by category, and each grows its
+  own part of the world — reading raises a **Library**, exercise a **Gym**, meditation a **Temple**,
+  sleep a **Moon Garden**, walking a **Forest**, and so on. "Your World" shows each structure and
+  its level, so progress is always visible without a rewards menu.
+- **The world advances through eras** purely by building, never by spending: Clearing → Garden →
+  Farm → Village → Town → City → Nature Reserve → Floating Isles → Fantasy Kingdom.
 - **Neglect wilts it.** Skip your days and health drops, colours fade toward a wan brown, and a
   plot occasionally withers — recoverable the moment you come back.
-- It's a small, deterministic idle sim advanced one day at a time, entirely local. A shared
-  squad farm is the next step.
+- It's a small, deterministic idle sim advanced one day at a time, entirely local. The circle is
+  now an **optional** accountability mode layered on top, not the core. A shared world, seasons,
+  and villager expeditions are the roadmap.
 
 ## The trust model — public-key cryptography, zero setup
 
@@ -178,7 +182,7 @@ passphrase backup + stats CSV · animated, Compose-drawn illustrations · 10 lan
 
 ## Install
 
-Copy `release/Pact-v5.12.apk` to **both** phones — yours and each trusted person's — allow
+Copy `release/Pact-v5.13.apk` to **both** phones — yours and each trusted person's — allow
 "install from unknown sources", and follow the in-app setup. Requires Android 8.0+ (API 26).
 No Google services needed.
 
