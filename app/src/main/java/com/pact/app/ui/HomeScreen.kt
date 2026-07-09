@@ -37,6 +37,7 @@ import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.BarChart
 import androidx.compose.material.icons.rounded.Bolt
 import androidx.compose.material.icons.rounded.EmojiEvents
+import androidx.compose.material.icons.rounded.Grass
 import androidx.compose.material.icons.rounded.Group
 import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.ReceiptLong
@@ -93,9 +94,12 @@ fun HomeScreen(
     onOpenCircle: () -> Unit,
     onOpenChallenges: () -> Unit,
     onOpenReceipts: () -> Unit,
+    onOpenFarm: () -> Unit,
 ) {
     val context = LocalContext.current
     val network = remember { TrustNetwork.get(context) }
+    val farm = remember { com.pact.app.core.FarmState.get(context) }
+    val farmSnap by farm.snapshot.collectAsState()
     val snapshot by state.snapshot.collectAsState()
     val netSnap by network.snapshot.collectAsState()
     val now by rememberNow()
@@ -149,17 +153,11 @@ fun HomeScreen(
                     color = Periwinkle,
                 )
             }
-            IconButton(onClick = onOpenChallenges) {
-                Icon(Icons.Rounded.EmojiEvents, contentDescription = stringResource(R.string.challenges_title), tint = TextSecondary)
-            }
-            IconButton(onClick = onOpenReceipts) {
-                Icon(Icons.Rounded.ReceiptLong, contentDescription = stringResource(R.string.receipts_title), tint = TextSecondary)
+            IconButton(onClick = onOpenFarm) {
+                Icon(Icons.Rounded.Grass, contentDescription = stringResource(R.string.farm_title), tint = TextSecondary)
             }
             IconButton(onClick = onOpenCircle) {
                 Icon(Icons.Rounded.Group, contentDescription = stringResource(R.string.circle_title), tint = TextSecondary)
-            }
-            IconButton(onClick = onOpenStats) {
-                Icon(Icons.Rounded.BarChart, contentDescription = stringResource(R.string.stats_open), tint = TextSecondary)
             }
             IconButton(onClick = onOpenSettings) {
                 Icon(Icons.Rounded.Settings, contentDescription = stringResource(R.string.home_settings), tint = TextSecondary)
@@ -170,6 +168,37 @@ fun HomeScreen(
             verticalArrangement = Arrangement.spacedBy(10.dp),
             modifier = Modifier.weight(1f),
         ) {
+            // the farm: the positive centerpiece, right up top
+            item {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(Brush.linearGradient(listOf(Surface2, Mint.copy(alpha = 0.14f))))
+                        .border(1.5.dp, CardBorder, RoundedCornerShape(20.dp))
+                        .clickable(onClick = onOpenFarm)
+                        .padding(16.dp),
+                ) {
+                    Text("🌱", fontSize = 34.sp)
+                    Spacer(Modifier.width(14.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text(stringResource(R.string.farm_home_banner, farmSnap.level), style = MaterialTheme.typography.titleMedium)
+                        Text(stringResource(R.string.farm_home_sub, farmSnap.points), style = MaterialTheme.typography.bodyMedium, color = Mint)
+                    }
+                    Text("${farmSnap.health}%", style = MaterialTheme.typography.titleMedium, color = if (farmSnap.health >= 50) Mint else Amber)
+                }
+            }
+
+            // quick links to the social + insight surfaces
+            item {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                    QuickLink(Icons.Rounded.EmojiEvents, stringResource(R.string.challenges_title), onOpenChallenges, Modifier.weight(1f))
+                    QuickLink(Icons.Rounded.ReceiptLong, stringResource(R.string.receipts_title), onOpenReceipts, Modifier.weight(1f))
+                    QuickLink(Icons.Rounded.BarChart, stringResource(R.string.stats_title), onOpenStats, Modifier.weight(1f))
+                }
+            }
+
             // hero status
             item {
                 HeroCard(
@@ -830,6 +859,23 @@ private fun HeroCard(
                 modifier = Modifier.fillMaxWidth(),
             )
         }
+    }
+}
+
+@Composable
+private fun QuickLink(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier
+            .clip(RoundedCornerShape(16.dp))
+            .background(Surface1)
+            .border(1.5.dp, CardBorder, RoundedCornerShape(16.dp))
+            .clickable(onClick = onClick)
+            .padding(vertical = 12.dp),
+    ) {
+        Icon(icon, contentDescription = label, tint = Periwinkle, modifier = Modifier.size(22.dp))
+        Spacer(Modifier.height(4.dp))
+        Text(label, style = MaterialTheme.typography.labelMedium, color = TextSecondary, maxLines = 1)
     }
 }
 
