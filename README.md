@@ -8,7 +8,7 @@ way to more is your **circle**, the people you trust. Then the part that makes i
 your friends **share your screen time** and **race to keep the longest streak** within your
 limits. No passwords, no accounts, no servers, no codes to type.
 
-<p align="center"><em>Ready-to-install APK: <a href="release/Pact-v5.15.apk"><code>release/Pact-v5.15.apk</code></a></em></p>
+<p align="center"><em>Ready-to-install APK: <a href="release/Pact-v5.16.apk"><code>release/Pact-v5.16.apk</code></a></em></p>
 
 ---
 
@@ -58,31 +58,38 @@ This is what turns a willpower app into something you *want* to open:
   time, your challenge rank — straight to the Android share sheet for a story or a group chat.
   Nothing personal leaves unless you send it.
 
-## The world — a tiny living diorama that grows as you do
+## The world — a tiny handcrafted village that grows as you do
 
-Blocking is the strict edge; the **world** is the heart. It's a **2.5D isometric diorama** (drawn
-entirely in Compose — no assets, no game engine) that you look into like a handcrafted model on a
-table. The camera never rotates; you **drag to pan (with inertia), pinch to zoom, and double-tap to
-focus**, and an **Enter world** button opens a full-screen immersive mode with floating glass UI.
-**Tap anything** — a building, a tree, a villager — and a glass bottom sheet tells you what it is
-and how it's growing.
+Blocking is the strict edge; the **world** is the heart. It's a **low-poly vector diorama** — a
+small, dense, handcrafted-looking village drawn entirely in Compose as clean flat-shaded geometry
+(no assets, no 3D engine, no pixels), lit like a model on a table. The **camera auto-frames the
+populated part of the world and zooms out as it grows**, so you never see empty space; the village
+sits centred, ringed by forest, a winding river and hills. The camera never rotates — you **drag to
+pan (with inertia), pinch to zoom, and double-tap to focus** — and an **Enter world** button opens a
+full-screen immersive mode with floating glass UI. **Tap anything** — a building, a tree, a villager
+— and a glass bottom sheet tells its story (a villager's name, what they're doing, their mood, and
+what they did for the world today).
 
-It's alive and lit by your **real time of day**: warm light and long feel at dawn, bright at noon,
-a gold dusk, then a blue night with stars, glowing windows, lanterns and **fireflies**. The terrain
-is a varied tile island — soft grass, flower patches, stone and dirt paths, a sandy pond, small
-cliffs and hills — never a plain green rectangle, with per-tile variation so nothing repeats. Trees
-sway, grass bends in the wind, water ripples, clouds drift, chimneys smoke, birds and butterflies
-cross the scene, and **weather** rolls through (clear, cloudy, rain, snow) with **seasons** tinting
-the foliage and dropping autumn leaves or winter snow. It thrives when you look after yourself and
-gently fades when you don't. **No guilt, no blocking** — just care:
+It's alive and lit by your **real time of day**: warm dawn, bright noon, a gold dusk, then a blue
+night with twinkling stars, glowing windows, flickering lanterns and **fireflies**. The land is
+organic, not a grid — soft grass with darker patches, flower clusters, a curved stone-and-dirt path
+network radiating from a central fountain plaza, a river, a duck pond with ripple rings, rocks and
+logs. Everything breathes: trees sway, crops wave, water ripples, clouds drift, chimneys smoke,
+birds cross the sky, butterflies wander the flowers, villagers stroll the plaza (a couple, a darting
+child, an elder, a fisher at the pond, a builder at work, a pet), and **weather** rolls through
+(clear, cloudy, rain, snow) with **seasons** tinting the foliage and dropping autumn leaves or
+winter snow. It thrives when you look after yourself and gently fades when you don't. **No guilt, no
+blocking** — just care:
 
-- **Every habit builds a specific structure, and you watch it go up.** Habits are tagged by
-  category, and each grows its own part of the world — reading raises a **Library**, exercise a
-  **Gym**, meditation a **Temple**, sleep a **Moon Garden** (a crescent and stars hang over the
-  world), walking a **Forest** (denser with every level), and so on. Buildings never pop into
-  existence: they progress through **foundation → framing → walls → finished**, with glowing
-  windows that multiply and chimney smoke once they're done. "Your World" also lists each structure
-  and its level — progress is always visible, no rewards menu.
+- **Every habit builds a specific building with its own personality.** Habits are tagged by
+  category, and each grows its own building in the village — reading raises an ivy-clad **Library**
+  with a lantern, cooking a **Bakery** with a smoking chimney and a bread sign, exercise a **Gym**
+  with a banner and weights, coding a **Workshop** with a log pile, meditation a **Temple** with a
+  hedge garden, sleep a **Moon** shrine that glows at night, and gardening a fenced **Farm** with
+  crop rows and a scarecrow; walking grows the surrounding **Forest**. Buildings never pop into
+  existence: they progress through **foundation → framing → walls → finished** (a builder villager
+  hammers away until then). "Your World" also lists each structure and its level — progress is
+  always visible, no rewards menu.
 - **Send villagers on expeditions.** Once you've checked off a habit, dispatch a villager on a
   Meadow walk, Forest trek, or Mountain climb. They come back — after real time — with a **one-off
   cosmetic** for your world: a topiary, a lantern, a wishing well, a stone statue, a fountain, a
@@ -201,7 +208,7 @@ passphrase backup + stats CSV · animated, Compose-drawn illustrations · 10 lan
 
 ## Install
 
-Copy `release/Pact-v5.15.apk` to **both** phones — yours and each trusted person's — allow
+Copy `release/Pact-v5.16.apk` to **both** phones — yours and each trusted person's — allow
 "install from unknown sources", and follow the in-app setup. Requires Android 8.0+ (API 26).
 No Google services needed.
 
