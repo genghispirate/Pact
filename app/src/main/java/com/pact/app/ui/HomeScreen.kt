@@ -95,6 +95,7 @@ fun HomeScreen(
     onOpenChallenges: () -> Unit,
     onOpenReceipts: () -> Unit,
     onOpenFarm: () -> Unit,
+    onOpenFocus: () -> Unit,
 ) {
     val context = LocalContext.current
     val network = remember { TrustNetwork.get(context) }
@@ -111,7 +112,6 @@ fun HomeScreen(
     }
     var appForAction by remember { mutableStateOf<String?>(null) }
     var changeRequested by remember { mutableStateOf(false) }
-    var choosingFocus by remember { mutableStateOf(false) }
     val hasCircle = netSnap.approvers().isNotEmpty()
     val focusActive = snapshot.focusActive(now)
 
@@ -135,34 +135,41 @@ fun HomeScreen(
             .navigationBarsPadding()
             .padding(horizontal = 20.dp),
     ) {
-        // header
+        // header — a warm, personal greeting
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 12.dp, bottom = 16.dp),
         ) {
-            PactLogo(38)
-            Spacer(Modifier.width(12.dp))
+            val greetingHour = remember(now) { java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY) }
+            val greeting = when {
+                greetingHour < 12 -> stringResource(R.string.greet_morning)
+                greetingHour < 18 -> stringResource(R.string.greet_afternoon)
+                else -> stringResource(R.string.greet_evening)
+            }
+            val name = network.myName.ifBlank { stringResource(R.string.greet_friend) }
             Column(Modifier.weight(1f)) {
-                Text(stringResource(R.string.app_name), style = MaterialTheme.typography.headlineSmall)
                 Text(
-                    if (hasCircle) stringResource(R.string.circle_members, netSnap.supporters().size)
-                    else stringResource(R.string.app_name),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = Periwinkle,
+                    stringResource(R.string.greet_line, greeting, name),
+                    style = MaterialTheme.typography.headlineSmall,
+                )
+                Text(
+                    stringResource(R.string.greet_sub),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = TextSecondary,
                 )
             }
-            // avatar chip (nav lives in the bottom bar now)
+            Spacer(Modifier.width(12.dp))
             Box(
                 modifier = Modifier
-                    .size(42.dp)
+                    .size(46.dp)
                     .clip(CircleShape)
                     .background(Surface2)
-                    .border(1.5.dp, CardBorder, CircleShape),
+                    .border(1.5.dp, Violet.copy(alpha = 0.5f), CircleShape),
                 contentAlignment = Alignment.Center,
             ) {
-                Text(network.myAvatar, fontSize = 22.sp)
+                Text(network.myAvatar, fontSize = 24.sp)
             }
         }
 
@@ -244,7 +251,7 @@ fun HomeScreen(
                     if (focusActive) {
                         PactCard(
                             background = Surface2,
-                            modifier = Modifier.padding(top = 4.dp),
+                            modifier = Modifier.padding(top = 4.dp).clickable(onClick = onOpenFocus),
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(Icons.Rounded.Bolt, contentDescription = null, tint = Periwinkle)
@@ -274,7 +281,7 @@ fun HomeScreen(
                                 .clip(RoundedCornerShape(20.dp))
                                 .background(Surface1)
                                 .border(1.dp, CardBorder, RoundedCornerShape(20.dp))
-                                .clickable { choosingFocus = true }
+                                .clickable(onClick = onOpenFocus)
                                 .padding(horizontal = 16.dp, vertical = 14.dp),
                         ) {
                             Box(
@@ -515,43 +522,6 @@ fun HomeScreen(
             },
             dismissButton = {
                 TextButton(onClick = { appForAction = null }) { Text(stringResource(R.string.common_close)) }
-            },
-        )
-    }
-
-    if (choosingFocus) {
-        AlertDialog(
-            onDismissRequest = { choosingFocus = false },
-            containerColor = MaterialTheme.colorScheme.surface,
-            title = { Text(stringResource(R.string.focus_pick_title), style = MaterialTheme.typography.headlineSmall) },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    listOf(
-                        R.string.focus_25m to 25 * 60_000L,
-                        R.string.focus_1h to 60 * 60_000L,
-                        R.string.focus_2h to 120 * 60_000L,
-                    ).forEach { (labelRes, duration) ->
-                        PactButton(
-                            stringResource(labelRes),
-                            onClick = {
-                                state.startFocus(duration)
-                                choosingFocus = false
-                            },
-                            tonal = true,
-                            modifier = Modifier.fillMaxWidth(),
-                        )
-                    }
-                    Spacer(Modifier.height(4.dp))
-                    Text(
-                        stringResource(R.string.focus_confirm_note),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = TextTertiary,
-                    )
-                }
-            },
-            confirmButton = {},
-            dismissButton = {
-                TextButton(onClick = { choosingFocus = false }) { Text(stringResource(R.string.common_cancel)) }
             },
         )
     }

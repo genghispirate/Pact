@@ -152,7 +152,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-private enum class Screen { Home, AddApps, Settings, Stats, Circle, Chat, Challenges, Receipts, Farm }
+private enum class Screen { Home, AddApps, Settings, Stats, Circle, Chat, Challenges, Receipts, Farm, Focus }
 
 @Composable
 private fun PactApp(state: PactState) {
@@ -194,8 +194,13 @@ private fun PactApp(state: PactState) {
                     onOpenChallenges = { screen = Screen.Challenges },
                     onOpenReceipts = { screen = Screen.Receipts },
                     onOpenFarm = { screen = Screen.Farm },
+                    onOpenFocus = { screen = Screen.Focus },
                 )
                 Screen.Farm -> com.pact.app.ui.FarmScreen(onBack = { screen = Screen.Home })
+                Screen.Focus -> {
+                    BackHandler { screen = Screen.Home }
+                    com.pact.app.ui.FocusScreen(state = state, onBack = { screen = Screen.Home })
+                }
                 Screen.Challenges -> {
                     BackHandler { screen = Screen.Home }
                     ChallengesScreen(state = state, onBack = { screen = Screen.Home })

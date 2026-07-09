@@ -8,7 +8,7 @@ way to more is your **circle**, the people you trust. Then the part that makes i
 your friends **share your screen time** and **race to keep the longest streak** within your
 limits. No passwords, no accounts, no servers, no codes to type.
 
-<p align="center"><em>Ready-to-install APK: <a href="release/Pact-v5.10.apk"><code>release/Pact-v5.10.apk</code></a></em></p>
+<p align="center"><em>Ready-to-install APK: <a href="release/Pact-v5.11.apk"><code>release/Pact-v5.11.apk</code></a></em></p>
 
 ---
 
@@ -176,7 +176,7 @@ passphrase backup + stats CSV · animated, Compose-drawn illustrations · 10 lan
 
 ## Install
 
-Copy `release/Pact-v5.10.apk` to **both** phones — yours and each trusted person's — allow
+Copy `release/Pact-v5.11.apk` to **both** phones — yours and each trusted person's — allow
 "install from unknown sources", and follow the in-app setup. Requires Android 8.0+ (API 26).
 No Google services needed.
 

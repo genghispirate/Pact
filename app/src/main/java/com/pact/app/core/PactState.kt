@@ -68,6 +68,7 @@ class PactState private constructor(context: Context) {
         val strictMode: Boolean = false,
         /** A focus session locks every blocked app, no unlocks, until this time. */
         val focusUntil: Long = 0L,
+        val focusStartAt: Long = 0L,
         /** Rolling daily stats, most recent last. Bounded to [DAYS_KEPT]. */
         val days: List<DayStats> = emptyList(),
         /** Cumulative count of block events per hour of day (24 buckets). */
@@ -225,7 +226,17 @@ class PactState private constructor(context: Context) {
      * way to end it early on purpose — that's the point.
      */
     fun startFocus(durationMillis: Long) {
-        prefs.edit().putLong(KEY_FOCUS, System.currentTimeMillis() + durationMillis).apply()
+        val now = System.currentTimeMillis()
+        prefs.edit()
+            .putLong(KEY_FOCUS, now + durationMillis)
+            .putLong(KEY_FOCUS_START, now)
+            .apply()
+        refresh()
+    }
+
+    /** End a focus session early. Kept gentle — no punishment for stopping. */
+    fun endFocus() {
+        prefs.edit().putLong(KEY_FOCUS, 0L).putLong(KEY_FOCUS_START, 0L).apply()
         refresh()
     }
 
@@ -402,6 +413,7 @@ class PactState private constructor(context: Context) {
         yellowCooldownUntil = decodeLongMap(prefs.getString(KEY_COOLDOWNS, "") ?: ""),
         strictMode = prefs.getBoolean(KEY_STRICT, false),
         focusUntil = prefs.getLong(KEY_FOCUS, 0L),
+        focusStartAt = prefs.getLong(KEY_FOCUS_START, 0L),
         days = decodeDays(prefs.getString(KEY_DAYS, "") ?: ""),
         hourHistogram = decodeHours(prefs.getString(KEY_HOURS, "") ?: ""),
         events = decodeEvents(prefs.getString(KEY_EVENTS, "") ?: ""),
@@ -556,6 +568,7 @@ class PactState private constructor(context: Context) {
         private const val KEY_COOLDOWNS = "yellow_cooldowns"
         private const val KEY_STRICT = "strict_mode"
         private const val KEY_FOCUS = "focus_until"
+        private const val KEY_FOCUS_START = "focus_start"
         private const val KEY_ROLE = "role"
         private const val KEY_DAYS = "stat_days"
         private const val KEY_HOURS = "stat_hours"

@@ -163,6 +163,23 @@
     <string name="widget_status_denied">Denied 🛑</string>
     <string name="widget_status_expired">Expired</string>
 
+    <!-- focus session screen -->
+    <string name="focus_screen_title">Focus</string>
+    <string name="focus_deep_work">Deep Work</string>
+    <string name="focus_until_time">Until %1$s</string>
+    <string name="focus_ready">Ready when you are</string>
+    <string name="focus_stop">Stop session</string>
+    <string name="focus_pick">Choose a stretch</string>
+    <string name="focus_blocking">Locked during focus</string>
+
+    <!-- greeting -->
+    <string name="greet_morning">Good morning</string>
+    <string name="greet_afternoon">Good afternoon</string>
+    <string name="greet_evening">Good evening</string>
+    <string name="greet_friend">friend</string>
+    <string name="greet_line">%1$s, %2$s</string>
+    <string name="greet_sub">Stay focused. You\'ve got this.</string>
+
     <!-- bottom nav -->
     <string name="nav_home">Home</string>
     <string name="nav_insights">Stats</string>
