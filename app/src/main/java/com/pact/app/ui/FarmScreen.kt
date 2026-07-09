@@ -85,7 +85,7 @@ fun FarmScreen(onBack: () -> Unit) {
     val snap by farm.snapshot.collectAsState()
     var adding by remember { mutableStateOf(false) }
     var reward by remember { mutableStateOf<String?>(null) }
-    var showWorld by remember { mutableStateOf(false) }
+    var worldSel by remember { mutableStateOf<WorldTap?>(null) }
     val builtCats = remember(snap) {
         (snap.habits.map { it.category } + snap.categoryPoints.keys).distinct()
             .map { FarmState.category(it) }
@@ -119,23 +119,12 @@ fun FarmScreen(onBack: () -> Unit) {
 
         LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             item {
+                // The living world sits right in the card — like a terrarium on your desk.
                 Box(
-                    Modifier.fillMaxWidth().height(320.dp).clip(RoundedCornerShape(20.dp))
-                        .border(1.5.dp, CardBorder, RoundedCornerShape(20.dp)),
+                    Modifier.fillMaxWidth().height(360.dp).clip(RoundedCornerShape(24.dp))
+                        .border(1.5.dp, CardBorder, RoundedCornerShape(24.dp)),
                 ) {
-                    WorldDiorama(snap, Modifier.fillMaxSize())
-                    // tap-to-expand into the immersive full-screen world
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.align(Alignment.BottomEnd).padding(12.dp)
-                            .clip(RoundedCornerShape(50)).background(Color.White.copy(alpha = 0.14f))
-                            .border(1.dp, Color.White.copy(alpha = 0.2f), RoundedCornerShape(50))
-                            .clickable { showWorld = true }.padding(horizontal = 14.dp, vertical = 8.dp),
-                    ) {
-                        Icon(Icons.Rounded.OpenInFull, contentDescription = null, tint = Color.White, modifier = Modifier.size(15.dp))
-                        Spacer(Modifier.width(8.dp))
-                        Text(stringResource(R.string.world_enter), style = MaterialTheme.typography.labelMedium, color = Color.White)
-                    }
+                    WorldDiorama(snap, Modifier.fillMaxSize(), onTapObject = { worldSel = it as? WorldTap })
                 }
             }
 
@@ -234,7 +223,7 @@ fun FarmScreen(onBack: () -> Unit) {
         }
     }
 
-    if (showWorld) WorldScreen(snap, onClose = { showWorld = false })
+    worldSel?.let { WorldInfoSheet(it) { worldSel = null } }
 
     if (adding) AddHabitDialog(onDismiss = { adding = false }, onAdd = { e, n, c -> farm.addHabit(e, n, c); adding = false })
 

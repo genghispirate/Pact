@@ -1,17 +1,10 @@
 package com.pact.app.ui
 
-import androidx.compose.animation.core.AnimationState
-import androidx.compose.animation.core.VectorConverter
-import androidx.compose.animation.core.animate
-import androidx.compose.animation.core.animateDecay
-import androidx.compose.animation.core.exponentialDecay
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,9 +33,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
@@ -59,16 +52,14 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.toSize
 import com.pact.app.core.FarmState
 import com.pact.app.ui.theme.TextSecondary
 import com.pact.app.ui.theme.TextTertiary
 import com.pact.app.ui.theme.Violet
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
 import java.util.Calendar
 import kotlin.math.abs
 import kotlin.math.cos
@@ -173,13 +164,18 @@ private data class Villager(
     val name: String, val activity: String, val mood: String, val contribution: String,
 )
 private data class Layout(
-    val landR: Float, val contentR: Float,
+    val level: Int, val landR: Float,
     val patches: List<Deco>, val flowers: List<Deco>, val rocks: List<Deco>,
     val trees: List<Tree>, val hills: List<Deco>,
     val buildings: List<Building>, val villagers: List<Villager>,
     val river: List<Offset>, val pond: Offset, val pondR: Float,
     val paths: List<List<Offset>>,
+    val windmill: Offset?, val cottage: Offset?, val castle: Offset?, val campfire: Offset,
+    val boats: Int, val festival: Boolean,
 )
+
+/** The camera pulls back a touch as the world levels up; the footprint stays compact. */
+private fun viewRadiusForLevel(level: Int): Float = (5.2f + level * 0.11f).coerceIn(5.2f, 9.2f)
 
 private val VNAMES = listOf("Emma", "Noah", "Mila", "Theo", "Ava", "Leo", "Ivy", "Finn", "Rosa", "Sol", "Nina", "Kai")
 private val ACTS = listOf("Reading" to "Read by the library", "Fishing" to "Caught two fish", "Planting" to "Planted flowers",
@@ -199,13 +195,16 @@ private fun polar(angleDeg: Float, r: Float): Offset {
 }
 
 private fun buildLayout(snap: FarmState.Snapshot): Layout {
+    val level = snap.level
+    val viewR = viewRadiusForLevel(level)
+    val forestLvl = snap.structureLevel("forest")
+
     val buildings = ArrayList<Building>()
     val paths = ArrayList<List<Offset>>()
     SITES.forEach { (id, ang, r) ->
         val cat = FarmState.category(id)
         val pts = snap.categoryPoints[id] ?: 0
         val p = polar(ang, r)
-        // buildings only appear once the habit has some progress; farm/moon show early
         val show = pts > 0 || id == "garden"
         if (!show) return@forEach
         val lvl = snap.structureLevel(id)
@@ -213,57 +212,46 @@ private fun buildLayout(snap: FarmState.Snapshot): Layout {
             lvl >= 2 -> 3; lvl == 1 -> 2; pts >= FarmState.STRUCTURE_POINTS / 2 -> 1; else -> 0
         }
         buildings += Building("b_$id", p.x, p.y, id, cat.emoji, cat.structure, stage, lvl)
-        // a gently curved path from the plaza to the door
         val mid = Offset(p.x * 0.5f + p.y * 0.12f, p.y * 0.5f - p.x * 0.12f)
         paths += listOf(Offset(0f, 0f), mid, p)
     }
 
-    // forest: clumps in the gaps beyond the ring — always a full ring so it's never empty
+    // forest — a compact ring whose density (not radius) grows with level & walking
     val trees = ArrayList<Tree>()
-    val forestLvl = snap.structureLevel("forest")
-    val clumps = 9 + forestLvl * 2
+    val clumps = (5 + level / 3 + forestLvl * 2).coerceIn(5, 18)
     for (c in 0 until clumps) {
         val ang = c * (360f / clumps) + rnd(c, 1) * 22f - 11f
-        val baseR = 5.6f + rnd(c, 2) * 1.9f
-        val n = 3 + (rnd(c, 3) * 3).toInt()
+        val baseR = viewR * (0.72f + rnd(c, 2) * 0.2f)
+        val n = 2 + (rnd(c, 3) * 3).toInt()
         for (k in 0 until n) {
-            val jr = baseR + rnd(c * 7 + k, 4) * 1.5f - 0.5f
-            val ja = ang + rnd(c * 7 + k, 5) * 26f - 13f
+            val jr = baseR + rnd(c * 7 + k, 4) * 1.1f - 0.4f
+            val ja = ang + rnd(c * 7 + k, 5) * 24f - 12f
             val p = polar(ja, jr)
-            trees += Tree(p.x, p.y, c * 31 + k, rnd(c * 7 + k, 6) > 0.6f, 0.8f + rnd(c * 7 + k, 8) * 0.5f)
+            trees += Tree(p.x, p.y, c * 31 + k, rnd(c * 7 + k, 6) > 0.6f, 0.72f + rnd(c * 7 + k, 8) * 0.48f)
         }
     }
-    // a few lone trees dotted inside for depth
-    for (i in 0 until 5) {
-        val p = polar(rnd(i, 11) * 360f, 2.0f + rnd(i, 12) * 1.4f)
-        if (hypot(p.x, p.y) > 1.4f) trees += Tree(p.x, p.y, 900 + i, false, 0.7f + rnd(i, 13) * 0.3f)
+    for (i in 0 until 4) {
+        val p = polar(rnd(i, 11) * 360f, 1.9f + rnd(i, 12) * 1.1f)
+        if (hypot(p.x, p.y) > 1.5f) trees += Tree(p.x, p.y, 900 + i, false, 0.68f + rnd(i, 13) * 0.3f)
     }
 
     // darker grass patches, flower clusters, rocks — clumped, never a checkerboard
     val patches = ArrayList<Deco>(); val flowers = ArrayList<Deco>(); val rocks = ArrayList<Deco>()
-    for (i in 0 until 26) {
-        val p = polar(rnd(i, 21) * 360f, rnd(i, 22) * 7.5f)
-        patches += Deco(p.x, p.y, "patch", i)
-    }
-    val flowerBoost = 3 + snap.structureLevel("garden") + snap.structureLevel("temple")
+    for (i in 0 until 22) { val p = polar(rnd(i, 21) * 360f, rnd(i, 22) * viewR); patches += Deco(p.x, p.y, "patch", i) }
+    val flowerBoost = 4 + snap.structureLevel("garden") + snap.structureLevel("temple") + level / 6
     for (cl in 0 until flowerBoost) {
-        val cc = polar(rnd(cl, 31) * 360f, 2.2f + rnd(cl, 32) * 5f)
+        val cc = polar(rnd(cl, 31) * 360f, 2.0f + rnd(cl, 32) * (viewR * 0.6f))
         val n = 4 + (rnd(cl, 33) * 5).toInt()
         for (k in 0 until n) flowers += Deco(cc.x + (rnd(cl * 9 + k, 34) - 0.5f) * 1.1f, cc.y + (rnd(cl * 9 + k, 35) - 0.5f) * 1.1f, "flower", cl * 9 + k)
     }
-    for (i in 0 until 10) {
-        val p = polar(rnd(i, 41) * 360f, 1.8f + rnd(i, 42) * 6f)
-        rocks += Deco(p.x, p.y, if (rnd(i, 43) > 0.6f) "log" else "rock", i)
-    }
+    for (i in 0 until 9) { val p = polar(rnd(i, 41) * 360f, 1.8f + rnd(i, 42) * viewR * 0.7f); rocks += Deco(p.x, p.y, if (rnd(i, 43) > 0.6f) "log" else "rock", i) }
 
-    // hills at the back (small x+y projects up/behind the village)
-    val hills = listOf(Deco(-5.5f, -3.5f, "hill", 1), Deco(-3.2f, -6f, "hill", 2), Deco(-7f, -6.5f, "hill", 3))
+    val hills = listOf(Deco(-viewR * 0.6f, -viewR * 0.4f, "hill", 1), Deco(-viewR * 0.34f, -viewR * 0.64f, "hill", 2), Deco(-viewR * 0.78f, -viewR * 0.72f, "hill", 3))
+    val sc = viewR / 6.5f
+    val river = listOf(Offset(-8f, -2f), Offset(-4.5f, -0.5f), Offset(-1.5f, 1.5f), Offset(1.5f, 3.5f), Offset(4.5f, 6f), Offset(7.5f, 8f)).map { it * sc }
+    val pond = polar(250f, viewR * 0.66f); val pondR = 1.5f * sc
 
-    // a winding river crossing behind the village, and a pond off to one side
-    val river = listOf(Offset(-8f, -2f), Offset(-4.5f, -0.5f), Offset(-1.5f, 1.5f), Offset(1.5f, 3.5f), Offset(4.5f, 6f), Offset(7.5f, 8f))
-    val pond = polar(250f, 4.6f); val pondR = 1.7f
-
-    // villagers — a lively, story-filled baseline in and around the plaza
+    // villagers — a lively, story-filled baseline; more as the world levels up
     val villagers = ArrayList<Villager>()
     fun v(id: String, route: List<Offset>, kind: String, hairI: Int, shirtI: Int, actI: Int, speed: Float, phase: Float): Villager {
         val hairs = listOf(Color(0xFF3A2A1C), Color(0xFF6B4A2A), Color(0xFFC9A24B), Color(0xFF9AA0A6), Color(0xFF2A2A2E))
@@ -273,31 +261,30 @@ private fun buildLayout(snap: FarmState.Snapshot): Layout {
         return Villager(id, route, speed, phase, kind, hairs[hairI % hairs.size], shirts[shirtI % shirts.size],
             VNAMES[(id.hashCode() and 0xffff) % VNAMES.size], act.first, moods[(id.hashCode() ushr 3) and 3], act.second)
     }
-    // couple strolling the plaza
     val ring = (0..7).map { polar(it * 45f, 1.5f) }
     villagers += v("couple_a", ring, "adult", 0, 0, 4, 0.05f, 0f)
     villagers += v("couple_b", ring, "adult", 2, 4, 4, 0.05f, 0.5f)
-    // child darting about
     villagers += v("child", listOf(Offset(0.3f, 0.3f), Offset(1.2f, -0.6f), Offset(-0.8f, -0.9f), Offset(-0.5f, 0.9f)), "child", 1, 1, 7, 0.12f, 0.2f)
-    // old villager feeding birds (mostly still)
     villagers += v("elder", listOf(Offset(-1.2f, 0.6f), Offset(-1.0f, 0.6f)), "elder", 3, 3, 6, 0.02f, 0f)
-    // a fisher at the pond
-    villagers += v("fisher", listOf(pond + Offset(1.2f, -0.2f), pond + Offset(1.25f, -0.15f)), "adult", 4, 2, 1, 0.02f, 0f)
-    // a wandering pet
+    villagers += v("fisher", listOf(pond + Offset(1.1f, -0.2f), pond + Offset(1.15f, -0.15f)), "adult", 4, 2, 1, 0.02f, 0f)
     villagers += v("pet", ring.map { it * 0.9f }, "pet", 1, 1, 4, 0.09f, 0.7f)
-    // a builder at any unfinished building
-    buildings.firstOrNull { it.stage < 3 }?.let { b ->
-        villagers += v("builder", listOf(Offset(b.x - 0.6f, b.y), Offset(b.x - 0.55f, b.y)), "adult", 0, 5, 5, 0f, 0f)
-    }
-    // more villagers as the world levels up
-    val extra = (snap.level).coerceIn(0, 4)
+    buildings.firstOrNull { it.stage < 3 }?.let { b -> villagers += v("builder", listOf(Offset(b.x - 0.6f, b.y), Offset(b.x - 0.55f, b.y)), "adult", 0, 5, 5, 0f, 0f) }
+    val extra = level.coerceIn(0, 7)
     for (i in 0 until extra) {
-        val a = polar(i * 80f + 20f, 2.4f); val b = polar(i * 80f + 60f, 3.0f)
-        villagers += v("wander$i", listOf(a, b, a), "adult", i + 1, i + 2, i + 2, 0.04f + rnd(i, 51) * 0.03f, rnd(i, 52))
+        val a = polar(i * 70f + 20f, 2.3f); val b = polar(i * 70f + 55f, 3.0f)
+        villagers += v("wander$i", listOf(a, b, a), if (i % 3 == 0) "child" else "adult", i + 1, i + 2, i + 2, 0.04f + rnd(i, 51) * 0.04f, rnd(i, 52))
     }
 
-    val contentR = 8.2f + forestLvl * 0.5f
-    return Layout(contentR + 1.4f, contentR, patches, flowers, rocks, trees, hills, buildings, villagers, river, pond, pondR, paths)
+    // level-gated landmarks — richness, not size
+    val windmill = if (level >= 6) polar(-70f, viewR * 0.58f) else null
+    val cottage = if (level >= 3) polar(-120f, 2.7f) else null
+    val castle = if (level >= 14) Offset(hills[2].x, hills[2].y + 0.2f) else null
+    val campfire = Offset(1.05f, 1.1f)
+    val boats = if (level >= 22) 2 else if (level >= 10) 1 else 0
+    val festival = level >= 30
+
+    return Layout(level, viewR + 1.2f, patches, flowers, rocks, trees, hills, buildings, villagers,
+        river, pond, pondR, paths, windmill, cottage, castle, campfire, boats, festival)
 }
 
 // ── smooth vector path helpers (Catmull-Rom → cubic) ─────────────────────
@@ -338,8 +325,6 @@ fun WorldDiorama(
     modifier: Modifier = Modifier,
     onTapObject: ((Any) -> Unit)? = null,
 ) {
-    val scope = rememberCoroutineScope()
-    val decay = remember { exponentialDecay<Offset>(frictionMultiplier = 0.7f) }
     val clock = remember { mutableFloatStateOf(0f) }
     LaunchedEffect(Unit) {
         val t0 = withFrameNanos { it }
@@ -347,117 +332,64 @@ fun WorldDiorama(
     }
 
     val layout = remember(snap) { buildLayout(snap) }
-
-    var u by remember { mutableStateOf(0f) }          // pixels per world unit (zoom)
-    var origin by remember { mutableStateOf(Offset.Zero) }   // screen pos of world (0,0,0)
-    var canvas by remember { mutableStateOf(Size.Zero) }
-    var framedFor by remember { mutableStateOf(-1f) }
-    var flingJob by remember { mutableStateOf<Job?>(null) }
-
-    fun project(x: Float, y: Float, z: Float) = origin + Offset(nx(x, y) * u, ny(x, y, z) * u)
-
-    // frame the populated part of the world; zoom out as it grows
-    fun targetFrame(size: Size, radius: Float): Pair<Float, Offset> {
-        var minX = Float.MAX_VALUE; var maxX = -Float.MAX_VALUE
-        var minY = Float.MAX_VALUE; var maxY = -Float.MAX_VALUE
-        for (i in 0 until 12) {
-            val a = i * 30f
-            val p = polar(a, radius)
-            for (zz in listOf(0f, 1.4f)) {
-                val gx = nx(p.x, p.y); val gy = ny(p.x, p.y, zz)
-                minX = minOf(minX, gx); maxX = maxOf(maxX, gx)
-                minY = minOf(minY, gy); maxY = maxOf(maxY, gy)
-            }
-        }
-        val wN = (maxX - minX).coerceAtLeast(0.01f); val hN = (maxY - minY).coerceAtLeast(0.01f)
-        val uu = minOf(size.width * 0.96f / wN, size.height * 0.82f / hN)
-        val cN = Offset((minX + maxX) / 2f, (minY + maxY) / 2f)
-        val org = Offset(size.width / 2f, size.height * 0.5f) - cN * uu
-        return uu to org
-    }
-
-    fun zoomAbout(c: Offset, factor: Float) {
-        val minU = canvas.width * 0.03f; val maxU = canvas.width * 0.2f
-        val nu = (u * factor).coerceIn(minU, maxU)
-        origin = c - (c - origin) * (nu / u)
-        u = nu
-    }
+    // camera pulls back smoothly as the world levels up — but the user never controls it
+    val viewR by animateFloatAsState(viewRadiusForLevel(snap.level), animationSpec = tween(1400), label = "viewR")
+    val fx = remember { mutableStateListOf<TapFx>() }
+    var birdStartle by remember { mutableFloatStateOf(-9999f) }
 
     Box(modifier) {
         Canvas(
             Modifier
                 .fillMaxSize()
                 .pointerInput(layout) {
-                    awaitEachGesture {
-                        flingJob?.cancel()
-                        val first = awaitFirstDown(requireUnconsumed = false)
-                        val tracker = VelocityTracker(); tracker.resetTracking()
-                        var prevC = first.position; var prevSpread = -1f; var moved = 0f
-                        while (true) {
-                            val e = awaitPointerEvent()
-                            val pts = e.changes.filter { it.pressed }
-                            if (pts.isEmpty()) break
-                            val c = pts.fold(Offset.Zero) { a, p -> a + p.position } / pts.size.toFloat()
-                            if (pts.size >= 2) {
-                                val spread = pts.fold(0f) { a, p -> a + (p.position - c).getDistance() } / pts.size
-                                if (prevSpread > 0f && spread > 0f) zoomAbout(c, spread / prevSpread)
-                                prevSpread = spread
-                            } else prevSpread = -1f
-                            val d = c - prevC; prevC = c
-                            origin += d; moved += d.getDistance()
-                            tracker.addPosition(e.changes.first().uptimeMillis, c)
-                            e.changes.forEach { it.consume() }
+                    detectTapGestures { pos ->
+                        val (u, origin) = frameCam(size.toSize(), viewR)
+                        fun proj(x: Float, y: Float, z: Float) = origin + Offset(nx(x, y) * u, ny(x, y, z) * u)
+                        val now = clock.floatValue
+                        val hit = tappables(layout).minByOrNull { (proj(it.first.x, it.first.y, 0f) - pos).getDistance() }
+                        val hd = hit?.let { (proj(it.first.x, it.first.y, 0f) - pos).getDistance() } ?: Float.MAX_VALUE
+                        val pc = proj(layout.pond.x, layout.pond.y, 0f)
+                        when {
+                            hit != null && hd < u * 0.85f -> onTapObject?.invoke(hit.second)
+                            (pos - pc).getDistance() < layout.pondR * u * 0.9f -> fx.add(TapFx(pc.x, pc.y, now, "fish"))
+                            pos.y < size.height * 0.4f -> birdStartle = now
+                            else -> fx.add(TapFx(pos.x, pos.y, now, "ripple"))
                         }
-                        if (moved < 14f) {
-                            val tap = prevC
-                            val hit = tappables(layout).minByOrNull { (project(it.first.x, it.first.y, 0f) - tap).getDistance() }
-                            val dist = hit?.let { (project(it.first.x, it.first.y, 0f) - tap).getDistance() } ?: Float.MAX_VALUE
-                            if (onTapObject != null && hit != null && dist < u * 0.9f) onTapObject(hit.second)
-                            else scope.launch {
-                                val u0 = u; val o0 = origin
-                                zoomAbout(tap, if (u < canvas.width * 0.09f) 1.7f else 0.62f)
-                                val u1 = u; val o1 = origin; u = u0; origin = o0
-                                animate(0f, 1f, animationSpec = tween(440)) { f, _ ->
-                                    u = u0 + (u1 - u0) * f
-                                    origin = Offset(o0.x + (o1.x - o0.x) * f, o0.y + (o1.y - o0.y) * f)
-                                }
-                            }
-                        } else {
-                            val v = tracker.calculateVelocity()
-                            flingJob = scope.launch {
-                                val st = AnimationState(Offset.VectorConverter, origin, Offset(v.x, v.y))
-                                st.animateDecay(decay) { origin = value }
-                            }
-                        }
+                        while (fx.size > 12) fx.removeAt(0)
                     }
                 },
         ) {
-            canvas = size
-            if (u <= 0f) { val (uu, oo) = targetFrame(size, layout.contentR); u = uu; origin = oo; framedFor = layout.contentR }
+            val (u, origin) = frameCam(size, viewR)
             val t = clock.floatValue
             val season = seasonNow()
             val cal = Calendar.getInstance()
             val hf = cal.get(Calendar.HOUR_OF_DAY) + cal.get(Calendar.MINUTE) / 60f
             val light = lightingFor(hf)
             val weather = weatherFor(t, season)
-            drawScene(t, light, weather, season, layout) { x, y, z -> project(x, y, z) }
-        }
-    }
-
-    // smoothly re-frame (zoom out) whenever the world grows
-    LaunchedEffect(layout.contentR, canvas) {
-        if (canvas == Size.Zero || u <= 0f) return@LaunchedEffect
-        if (layout.contentR > framedFor + 0.01f) {
-            framedFor = layout.contentR
-            val (uu, oo) = targetFrame(canvas, layout.contentR)
-            val u0 = u; val o0 = origin
-            animate(0f, 1f, animationSpec = tween(700)) { f, _ ->
-                u = u0 + (uu - u0) * f
-                origin = Offset(o0.x + (oo.x - o0.x) * f, o0.y + (oo.y - o0.y) * f)
-            }
+            drawScene(t, light, weather, season, layout, birdStartle, fx) { x, y, z -> origin + Offset(nx(x, y) * u, ny(x, y, z) * u) }
         }
     }
 }
+
+/** Fixed isometric framing — fits the compact island to the card, keyed to level. */
+private fun frameCam(size: Size, viewR: Float): Pair<Float, Offset> {
+    var minX = Float.MAX_VALUE; var maxX = -Float.MAX_VALUE
+    var minY = Float.MAX_VALUE; var maxY = -Float.MAX_VALUE
+    for (i in 0 until 12) {
+        val p = polar(i * 30f, viewR)
+        for (zz in listOf(0f, 1.4f)) {
+            val gx = nx(p.x, p.y); val gy = ny(p.x, p.y, zz)
+            minX = minOf(minX, gx); maxX = maxOf(maxX, gx); minY = minOf(minY, gy); maxY = maxOf(maxY, gy)
+        }
+    }
+    val wN = (maxX - minX).coerceAtLeast(0.01f); val hN = (maxY - minY).coerceAtLeast(0.01f)
+    val uu = minOf(size.width * 0.99f / wN, size.height * 0.94f / hN)
+    val cN = Offset((minX + maxX) / 2f, (minY + maxY) / 2f)
+    return uu to (Offset(size.width / 2f, size.height * 0.52f) - cN * uu)
+}
+
+/** A short-lived tap effect drawn in screen space (camera is fixed). */
+private data class TapFx(val x: Float, val y: Float, val start: Float, val type: String)
 
 // list of tappable (worldPos, info) for hit-testing
 private fun tappables(layout: Layout): List<Pair<Offset, WorldTap>> {
@@ -466,9 +398,11 @@ private fun tappables(layout: Layout): List<Pair<Offset, WorldTap>> {
         out += Offset(it.x, it.y) to WorldTap(it.emoji, it.title, "Built from your ${it.title} habits", "building", it.stage, it.level)
     }
     layout.villagers.filter { it.kind != "pet" }.forEach {
-        val pos = it.route.first()
-        out += pos to WorldTap(if (it.kind == "child") "🧒" else if (it.kind == "elder") "🧓" else "🧑", it.name,
+        out += it.route.first() to WorldTap(if (it.kind == "child") "🧒" else if (it.kind == "elder") "🧓" else "🧑", it.name,
             "Currently: ${it.activity}", "villager", 0, 0, it.mood, it.contribution)
+    }
+    layout.trees.take(8).forEach {
+        out += Offset(it.x, it.y) to WorldTap("🌳", "Oak tree", "Grown by your walks", "tree", 0, 0, "", "Age ${(it.scale * 20).toInt()} rings")
     }
     return out
 }
@@ -482,6 +416,7 @@ data class WorldTap(
 
 private fun DrawScope.drawScene(
     t: Float, light: Lighting, weather: Weather, season: Season, layout: Layout,
+    birdStartle: Float, fx: List<TapFx>,
     P: (Float, Float, Float) -> Offset,
 ) {
     val w = size.width; val h = size.height
@@ -529,9 +464,16 @@ private fun DrawScope.drawScene(
     }
     // river
     drawWater(layout.river.map { P(it.x, it.y, 0f) }, u * 0.62f, t, light, u)
-    // pond
+    // pond (with harbour boats once the world is big enough)
     val pc = P(layout.pond.x, layout.pond.y, 0f)
     drawPond(pc, layout.pondR * u * 0.5f, layout.pondR * u * 0.25f, t, light, u)
+    for (bi in 0 until layout.boats) {
+        val bx = pc.x + (bi - 0.5f) * u * 0.5f + sin(t / 1800f + bi) * u * 0.1f
+        val by = pc.y + (bi - 0.5f) * u * 0.14f
+        drawOval(shade(Color(0xFF8A5A34), light), Offset(bx - u * 0.16f, by - u * 0.05f), Size(u * 0.32f, u * 0.12f))
+        drawLine(shade(Color(0xFF6E4A2A), light), Offset(bx, by - u * 0.05f), Offset(bx, by - u * 0.3f), strokeWidth = u * 0.02f)
+        drawPath(Path().apply { moveTo(bx, by - u * 0.3f); lineTo(bx + u * 0.12f, by - u * 0.12f); lineTo(bx, by - u * 0.12f); close() }, shade(Color(0xFFF2E4C6), light))
+    }
     // paths (curved, tan)
     layout.paths.forEach { pp ->
         val sp = smoothPath(pp.map { P(it.x, it.y, 0f) }, false)
@@ -562,10 +504,14 @@ private fun DrawScope.drawScene(
         }
     }
 
-    // ── upright objects, back-to-front
+    // ── upright objects, back-to-front (hills/landmarks/trees/buildings/villagers)
     data class Drawable(val depth: Float, val draw: () -> Unit)
     val ds = ArrayList<Drawable>()
     layout.hills.forEach { hh -> ds += Drawable(hh.x + hh.y - 2f) { drawHill(P(hh.x, hh.y, 0f), u, light, season, hh.seed) } }
+    layout.castle?.let { c -> ds += Drawable(c.x + c.y - 1.6f) { drawCastle(P(c.x, c.y, 0f), u, light) } }
+    layout.windmill?.let { c -> ds += Drawable(c.x + c.y) { drawWindmill(P(c.x, c.y, 0f), u, t, light) } }
+    layout.cottage?.let { c -> ds += Drawable(c.x + c.y) { drawCottage(P(c.x, c.y, 0f), u, t, light) } }
+    ds += Drawable(layout.campfire.x + layout.campfire.y) { drawCampfire(P(layout.campfire.x, layout.campfire.y, 0f), u, t, light) }
     layout.trees.forEach { tr -> ds += Drawable(tr.x + tr.y) { drawTree(P(tr.x, tr.y, 0f), u * tr.scale, t, light, season, tr.seed, tr.pine) } }
     layout.buildings.forEach { b -> ds += Drawable(b.x + b.y) { drawBuilding(b, P(b.x, b.y, 0f), u, t, light) } }
     layout.villagers.forEach { vg ->
@@ -574,17 +520,48 @@ private fun DrawScope.drawScene(
     }
     ds.sortedBy { it.depth }.forEach { it.draw() }
 
-    // building emoji signs + names (screen-space text, over their tiles)
-    layout.buildings.forEach { b ->
-        val p = P(b.x, b.y, 0f)
-        val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
-            textSize = u * 0.22f; textAlign = android.graphics.Paint.Align.CENTER
+    // festival bunting strung between buildings
+    if (layout.festival && layout.buildings.size >= 2) {
+        val tops = layout.buildings.map { P(it.x, it.y, 0f) - Offset(0f, u * 0.5f) }.sortedBy { it.x }
+        for (i in 0 until tops.size - 1) {
+            val a = tops[i]; val bb = tops[i + 1]; val steps = 6
+            for (s in 0 until steps) {
+                val f0 = s / steps.toFloat()
+                val fx0 = a.x + (bb.x - a.x) * f0; val fy0 = a.y + (bb.y - a.y) * f0 + sin(f0 * Math.PI).toFloat() * u * 0.12f
+                drawPath(Path().apply { moveTo(fx0, fy0); lineTo(fx0 + u * 0.05f, fy0 + u * 0.08f); lineTo(fx0 - u * 0.05f, fy0 + u * 0.08f); close() },
+                    shade(listOf(Color(0xFFFF6FA6), Color(0xFFFFD24B), Color(0xFF6FA8FF))[s % 3], light))
+            }
         }
-        if (b.stage >= 2) drawContext.canvas.nativeCanvas.drawText(b.emoji, p.x, p.y - u * 0.92f, paint)
+    }
+
+    // building emoji signs (screen-space text)
+    layout.buildings.forEach { b ->
+        if (b.stage >= 2) {
+            val p = P(b.x, b.y, 0f)
+            val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+                textSize = u * 0.22f; textAlign = android.graphics.Paint.Align.CENTER
+            }
+            drawContext.canvas.nativeCanvas.drawText(b.emoji, p.x, p.y - u * 0.92f, paint)
+        }
     }
 
     // ── flying life + weather + light overlays
-    drawFlyingLife(t, light, weather, season, P, u)
+    drawFlyingLife(t, light, weather, season, birdStartle, P, u)
+    // tap effects: pond fish-jumps + ripple rings
+    fx.forEach { e ->
+        val age = (t - e.start) / 1000f
+        if (age in 0f..1.3f) {
+            for (k in 0 until 2) {
+                val rp = (age + k * 0.3f).coerceAtMost(1f)
+                drawOval(Color.White.copy(alpha = (1f - rp) * 0.5f), Offset(e.x - u * 0.3f * rp, e.y - u * 0.15f * rp), Size(u * 0.6f * rp, u * 0.3f * rp), style = Stroke(width = 2f))
+            }
+            if (e.type == "fish") {
+                val arc = sin(age / 0.6f * Math.PI).toFloat().coerceAtLeast(0f)
+                val fyp = e.y - arc * u * 0.5f
+                drawOval(shade(Color(0xFFBFD3E0), light), Offset(e.x - u * 0.05f, fyp - u * 0.03f), Size(u * 0.12f, u * 0.06f))
+            }
+        }
+    }
     // gentle vignette
     drawRect(Brush.radialGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.24f)), center = Offset(w / 2f, h * 0.46f), radius = w * 0.95f))
 }
@@ -796,6 +773,75 @@ private fun DrawScope.drawFarm(base: Offset, u: Float, t: Float, light: Lighting
     drawCircle(shade(Color(0xFFD9B36A), light), u * 0.06f, Offset(base.x, base.y - u * 0.5f))
 }
 
+// ── level-gated landmarks ──────────────────────────────────────────────────
+
+private fun DrawScope.drawWindmill(base: Offset, u: Float, t: Float, light: Lighting) {
+    drawOval(Color.Black.copy(alpha = 0.16f), Offset(base.x - u * 0.3f, base.y - u * 0.04f), Size(u * 0.6f, u * 0.2f))
+    // tapered tower
+    drawPath(Path().apply {
+        moveTo(base.x - u * 0.22f, base.y); lineTo(base.x + u * 0.22f, base.y)
+        lineTo(base.x + u * 0.13f, base.y - u * 0.9f); lineTo(base.x - u * 0.13f, base.y - u * 0.9f); close()
+    }, shade(Color(0xFFEDE0C4), light))
+    drawPath(Path().apply {
+        moveTo(base.x - u * 0.13f, base.y - u * 0.9f); lineTo(base.x + u * 0.13f, base.y - u * 0.9f)
+        lineTo(base.x, base.y - u * 1.12f); close()
+    }, shade(Color(0xFF9A5A3A), light))
+    // turning blades
+    val hub = Offset(base.x, base.y - u * 0.86f)
+    val rot = t / 900f
+    for (b in 0 until 4) {
+        val a = rot + b * (Math.PI / 2)
+        val tip = Offset(hub.x + (cos(a) * u * 0.42f).toFloat(), hub.y + (sin(a) * u * 0.42f).toFloat())
+        val pa = a + 0.32
+        val side = Offset(hub.x + (cos(pa) * u * 0.12f).toFloat(), hub.y + (sin(pa) * u * 0.12f).toFloat())
+        drawPath(Path().apply { moveTo(hub.x, hub.y); lineTo(tip.x, tip.y); lineTo(side.x, side.y); close() }, shade(Color(0xFFF2E8D2), light))
+    }
+    drawCircle(shade(Color(0xFF6E4A2A), light), u * 0.05f, hub)
+}
+
+private fun DrawScope.drawCottage(base: Offset, u: Float, t: Float, light: Lighting) {
+    drawOval(Color.Black.copy(alpha = 0.16f), Offset(base.x - u * 0.4f, base.y - u * 0.04f), Size(u * 0.8f, u * 0.22f))
+    val bw = u * 0.7f; val bh = u * 0.36f; val fx = base.x - bw / 2f; val fy = base.y - bh
+    drawRect(shade(Color(0xFFEFDCBE), light), Offset(fx, fy), Size(bw, bh))
+    // thatched roof
+    drawPath(Path().apply { moveTo(fx - u * 0.1f, fy); lineTo(base.x, fy - u * 0.3f); lineTo(fx + bw + u * 0.1f, fy); close() }, shade(Color(0xFFB98A4E), light))
+    // chimney + smoke
+    drawRect(shade(Color(0xFF9A6A46), light), Offset(fx + bw * 0.7f, fy - u * 0.28f), Size(u * 0.1f, u * 0.18f))
+    for (k in 0 until 3) { val pr = ((t / 1300f) + k / 3f) % 1f; drawCircle(Color(0xFFE8E1D6).copy(alpha = (1f - pr) * 0.45f), u * (0.04f + pr * 0.07f), Offset(fx + bw * 0.75f, fy - u * 0.28f - pr * u * 0.4f)) }
+    drawRect(shade(Color(0xFF6B4A2C), light), Offset(base.x - u * 0.06f, base.y - u * 0.18f), Size(u * 0.12f, u * 0.18f))
+    drawRect(lerp(Color(0xFF9AD0EE), Color(0xFFFFE08A), light.night), Offset(fx + u * 0.1f, fy + u * 0.1f), Size(u * 0.1f, u * 0.1f))
+}
+
+private fun DrawScope.drawCastle(base: Offset, u: Float, light: Lighting) {
+    drawOval(Color.Black.copy(alpha = 0.18f), Offset(base.x - u * 0.7f, base.y - u * 0.05f), Size(u * 1.4f, u * 0.3f))
+    val stone = shade(Color(0xFFCFC8BC), light); val dark = shade(Color(0xFFAAA192), light)
+    // keep
+    drawRect(stone, Offset(base.x - u * 0.4f, base.y - u * 1.0f), Size(u * 0.8f, u * 1.0f))
+    // crenellations
+    for (i in 0 until 4) drawRect(dark, Offset(base.x - u * 0.4f + i * u * 0.22f, base.y - u * 1.08f), Size(u * 0.12f, u * 0.1f))
+    // side towers
+    for (sx in listOf(-0.55f, 0.55f)) {
+        drawRect(stone, Offset(base.x + sx * u - u * 0.12f, base.y - u * 0.85f), Size(u * 0.24f, u * 0.85f))
+        drawPath(Path().apply { moveTo(base.x + sx * u - u * 0.16f, base.y - u * 0.85f); lineTo(base.x + sx * u, base.y - u * 1.08f); lineTo(base.x + sx * u + u * 0.16f, base.y - u * 0.85f); close() }, shade(Color(0xFF8A6BEE), light))
+        drawLine(shade(Color(0xFFD95E86), light), Offset(base.x + sx * u, base.y - u * 1.08f), Offset(base.x + sx * u, base.y - u * 1.28f), strokeWidth = u * 0.02f)
+    }
+    // gate + glow
+    drawPath(Path().apply { moveTo(base.x - u * 0.12f, base.y); lineTo(base.x - u * 0.12f, base.y - u * 0.28f); lineTo(base.x, base.y - u * 0.4f); lineTo(base.x + u * 0.12f, base.y - u * 0.28f); lineTo(base.x + u * 0.12f, base.y); close() }, shade(Color(0xFF5A4632), light))
+}
+
+private fun DrawScope.drawCampfire(base: Offset, u: Float, t: Float, light: Lighting) {
+    // logs
+    drawOval(shade(Color(0xFF6E4A2A), light), Offset(base.x - u * 0.14f, base.y - u * 0.05f), Size(u * 0.28f, u * 0.1f))
+    drawOval(shade(Color(0xFF8A5A34), light), Offset(base.x - u * 0.1f, base.y - u * 0.07f), Size(u * 0.2f, u * 0.08f))
+    // flickering flame
+    val fl = 0.8f + 0.2f * sin(t / 90f)
+    drawPath(Path().apply { moveTo(base.x - u * 0.08f, base.y - u * 0.05f); lineTo(base.x, base.y - u * 0.34f * fl); lineTo(base.x + u * 0.08f, base.y - u * 0.05f); close() }, Color(0xFFFF7A3C))
+    drawPath(Path().apply { moveTo(base.x - u * 0.045f, base.y - u * 0.05f); lineTo(base.x, base.y - u * 0.24f * fl); lineTo(base.x + u * 0.045f, base.y - u * 0.05f); close() }, Color(0xFFFFD24B))
+    // glow at night + sparks + smoke
+    if (light.night > 0.2f) drawCircle(Color(0xFFFF9A4D).copy(alpha = light.night * 0.35f), u * 0.4f, Offset(base.x, base.y - u * 0.1f))
+    for (k in 0 until 3) { val pr = ((t / 700f) + k / 3f) % 1f; drawCircle(Color(0xFFFFCE7A).copy(alpha = (1f - pr) * 0.6f), u * 0.02f, Offset(base.x + sin(t / 120f + k) * u * 0.06f, base.y - u * 0.34f - pr * u * 0.3f)) }
+}
+
 // ── villagers ─────────────────────────────────────────────────────────────
 
 private fun villagerPos(v: Villager, t: Float): Pair<Offset, Boolean> {
@@ -841,10 +887,10 @@ private fun DrawScope.drawVillager(base: Offset, u: Float, t: Float, light: Ligh
 
 // ── flying life + weather ─────────────────────────────────────────────────
 
-private fun DrawScope.drawFlyingLife(t: Float, light: Lighting, weather: Weather, season: Season, P: (Float, Float, Float) -> Offset, u: Float) {
+private fun DrawScope.drawFlyingLife(t: Float, light: Lighting, weather: Weather, season: Season, birdStartle: Float, P: (Float, Float, Float) -> Offset, u: Float) {
     val w = size.width; val h = size.height
     // butterflies over the flowers by day
-    if (light.night < 0.55f) for (i in 0 until 5) {
+    if (light.night < 0.55f) for (i in 0 until 6) {
         val c = P(2f * sin(t / 2000f + i) , 2f * cos(t / 1700f + i * 2f), 0f)
         val bx = c.x + sin(t / 500f + i) * u * 0.4f; val by = c.y - u * 0.5f + cos(t / 400f + i) * u * 0.3f
         val col = listOf(Color(0xFFFFB84D), Color(0xFFFF7FB0), Color(0xFFB58BFF))[i % 3]
@@ -852,11 +898,13 @@ private fun DrawScope.drawFlyingLife(t: Float, light: Lighting, weather: Weather
         drawOval(col, Offset(bx - u * 0.06f, by - flap), Size(u * 0.06f, u * 0.1f))
         drawOval(col, Offset(bx, by - flap), Size(u * 0.06f, u * 0.1f))
     }
-    // birds crossing by day
+    // birds crossing by day — scatter upward for ~1.4s when tapped
+    val startled = (t - birdStartle) in 0f..1400f
     if (light.night < 0.5f && weather != Weather.RAIN) for (b in 0 until 3) {
         val bp = (t / 6000f + b * 0.33f) % 1f
-        val bx = w * (0.05f + 0.9f * bp); val by = h * (0.2f + 0.06f * b) + sin(t / 260f + b) * u * 0.15f
-        val flap = (sin(t / 80f + b * 2f) + 1f) / 2f
+        val lift = if (startled) ((t - birdStartle) / 1400f) * h * 0.5f else 0f
+        val bx = w * (0.05f + 0.9f * bp); val by = h * (0.2f + 0.06f * b) + sin(t / 260f + b) * u * 0.15f - lift
+        val flap = (sin(t / (if (startled) 40f else 80f) + b * 2f) + 1f) / 2f
         val c = Color(0xCC33333F)
         drawLine(c, Offset(bx - u * 0.14f, by + flap * u * 0.04f), Offset(bx, by - flap * u * 0.05f), strokeWidth = u * 0.03f)
         drawLine(c, Offset(bx, by - flap * u * 0.05f), Offset(bx + u * 0.14f, by + flap * u * 0.04f), strokeWidth = u * 0.03f)
@@ -886,79 +934,38 @@ private fun DrawScope.drawFlyingLife(t: Float, light: Lighting, weather: Weather
     }
 }
 
-// ═════════════════════════════════════════════════ fullscreen host
+// ═════════════════════════════════════════════════ tap info sheet
 
+/** A small glass bottom sheet describing whatever the user tapped in the world. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WorldScreen(snap: FarmState.Snapshot, onClose: () -> Unit) {
-    var selected by remember { mutableStateOf<WorldTap?>(null) }
+fun WorldInfoSheet(o: WorldTap, onDismiss: () -> Unit) {
     val sheet = rememberModalBottomSheetState()
-
-    Box(Modifier.fillMaxSize().background(Color(0xFF10193C))) {
-        WorldDiorama(snap, Modifier.fillMaxSize(), onTapObject = { selected = it as? WorldTap })
-
-        Column(Modifier.statusBarsPadding().padding(16.dp).fillMaxWidth()) {
+    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheet, containerColor = MaterialTheme.colorScheme.surface) {
+        Column(Modifier.fillMaxWidth().padding(24.dp).navigationBarsPadding()) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                GlassChip {
-                    Text(snap.stageName, style = MaterialTheme.typography.titleSmall, color = Color.White, fontWeight = FontWeight.SemiBold)
-                    Text("  ·  Lv ${snap.level}", style = MaterialTheme.typography.labelMedium, color = Color.White.copy(alpha = 0.7f))
+                Text(o.emoji, fontSize = 40.sp)
+                Spacer(Modifier.width(14.dp))
+                Column {
+                    Text(o.title, style = MaterialTheme.typography.headlineSmall)
+                    Text(o.subtitle, style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
                 }
-                Spacer(Modifier.weight(1f))
-                GlassIcon(Icons.AutoMirrored.Rounded.ArrowBack, onClose)
             }
-        }
-        GlassChip(Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(bottom = 20.dp)) {
-            Icon(Icons.Rounded.CenterFocusWeak, contentDescription = null, tint = Color.White.copy(alpha = 0.8f), modifier = Modifier.size(16.dp))
-            Spacer(Modifier.width(8.dp))
-            Text("Pinch, drag, double-tap · tap anything", style = MaterialTheme.typography.labelMedium, color = Color.White.copy(alpha = 0.85f))
+            Spacer(Modifier.height(16.dp))
+            when (o.kind) {
+                "building" -> Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    InfoTile("Stage", listOf("Foundation", "Framing", "Walls", "Finished")[o.stage.coerceIn(0, 3)], Modifier.weight(1f))
+                    InfoTile("Level", "${o.level}", Modifier.weight(1f))
+                }
+                "tree" -> InfoTile("Growth", o.contribution.ifBlank { "Growing" }, Modifier.fillMaxWidth())
+                else -> Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    InfoTile("Mood", o.mood.ifBlank { "😊" }, Modifier.weight(1f))
+                    InfoTile("Today", o.contribution.ifBlank { "Helping out" }, Modifier.weight(2f))
+                }
+            }
+            Spacer(Modifier.height(12.dp))
         }
     }
-
-    selected?.let { o ->
-        ModalBottomSheet(onDismissRequest = { selected = null }, sheetState = sheet, containerColor = MaterialTheme.colorScheme.surface) {
-            Column(Modifier.fillMaxWidth().padding(24.dp).navigationBarsPadding()) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(o.emoji, fontSize = 40.sp)
-                    Spacer(Modifier.width(14.dp))
-                    Column {
-                        Text(o.title, style = MaterialTheme.typography.headlineSmall)
-                        Text(o.subtitle, style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
-                    }
-                }
-                Spacer(Modifier.height(16.dp))
-                if (o.kind == "building") {
-                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        InfoTile("Stage", listOf("Foundation", "Framing", "Walls", "Finished")[o.stage.coerceIn(0, 3)], Modifier.weight(1f))
-                        InfoTile("Level", "${o.level}", Modifier.weight(1f))
-                    }
-                } else {
-                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        InfoTile("Mood", o.mood.ifBlank { "😊" }, Modifier.weight(1f))
-                        InfoTile("Today", o.contribution, Modifier.weight(2f))
-                    }
-                }
-                Spacer(Modifier.height(12.dp))
-            }
-        }
-    }
-}
-
-@Composable
-private fun GlassChip(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
-    Row(
-        modifier.clip(RoundedCornerShape(50)).background(Color.White.copy(alpha = 0.12f))
-            .border(1.dp, Color.White.copy(alpha = 0.18f), RoundedCornerShape(50)).padding(horizontal = 16.dp, vertical = 10.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) { content() }
-}
-
-@Composable
-private fun GlassIcon(icon: androidx.compose.ui.graphics.vector.ImageVector, onClick: () -> Unit) {
-    Box(
-        Modifier.size(40.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.12f))
-            .border(1.dp, Color.White.copy(alpha = 0.18f), CircleShape).clickable { onClick() },
-        contentAlignment = Alignment.Center,
-    ) { Icon(icon, contentDescription = null, tint = Color.White) }
 }
 
 @Composable

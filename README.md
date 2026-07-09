@@ -8,7 +8,7 @@ way to more is your **circle**, the people you trust. Then the part that makes i
 your friends **share your screen time** and **race to keep the longest streak** within your
 limits. No passwords, no accounts, no servers, no codes to type.
 
-<p align="center"><em>Ready-to-install APK: <a href="release/Pact-v5.16.apk"><code>release/Pact-v5.16.apk</code></a></em></p>
+<p align="center"><em>Ready-to-install APK: <a href="release/Pact-v5.17.apk"><code>release/Pact-v5.17.apk</code></a></em></p>
 
 ---
 
@@ -62,24 +62,29 @@ This is what turns a willpower app into something you *want* to open:
 
 Blocking is the strict edge; the **world** is the heart. It's a **low-poly vector diorama** — a
 small, dense, handcrafted-looking village drawn entirely in Compose as clean flat-shaded geometry
-(no assets, no 3D engine, no pixels), lit like a model on a table. The **camera auto-frames the
-populated part of the world and zooms out as it grows**, so you never see empty space; the village
-sits centred, ringed by forest, a winding river and hills. The camera never rotates — you **drag to
-pan (with inertia), pinch to zoom, and double-tap to focus** — and an **Enter world** button opens a
-full-screen immersive mode with floating glass UI. **Tap anything** — a building, a tree, a villager
-— and a glass bottom sheet tells its story (a villager's name, what they're doing, their mood, and
-what they did for the world today).
+(no assets, no 3D engine, no pixels) — living **right inside the card** on the World tab, like a
+terrarium on your desk. There's **no separate screen and nothing to navigate**: one fixed
+isometric camera holds the whole island in frame and **pulls back on its own as you level up**
+(a tiny clearing at Level 1 → a village → a castle on the hill), so the footprint stays compact
+while the *density* grows. **Tap anything** and a small glass card tells its story — a building's
+stage, a tree's age, or a villager's name, what they're doing, their mood, and what they did for
+the world today. Tap the pond and fish jump; tap the sky and the birds scatter.
 
 It's alive and lit by your **real time of day**: warm dawn, bright noon, a gold dusk, then a blue
 night with twinkling stars, glowing windows, flickering lanterns and **fireflies**. The land is
 organic, not a grid — soft grass with darker patches, flower clusters, a curved stone-and-dirt path
 network radiating from a central fountain plaza, a river, a duck pond with ripple rings, rocks and
-logs. Everything breathes: trees sway, crops wave, water ripples, clouds drift, chimneys smoke,
-birds cross the sky, butterflies wander the flowers, villagers stroll the plaza (a couple, a darting
-child, an elder, a fisher at the pond, a builder at work, a pet), and **weather** rolls through
-(clear, cloudy, rain, snow) with **seasons** tinting the foliage and dropping autumn leaves or
-winter snow. It thrives when you look after yourself and gently fades when you don't. **No guilt, no
-blocking** — just care:
+logs, and a **campfire** flickering by the plaza. Everything breathes: trees sway, crops wave, water
+ripples, clouds drift, chimneys smoke, a windmill turns, birds cross the sky, butterflies wander the
+flowers, villagers stroll the plaza (a couple, a darting child, an elder, a fisher at the pond, a
+builder at work, a pet), and **weather** rolls through (clear, cloudy, rain, snow) with **seasons**
+tinting the foliage and dropping autumn leaves or winter snow. It thrives when you look after
+yourself and gently fades when you don't. **No guilt, no blocking** — just care:
+
+- **Richness, not size.** As your overall level climbs, the world grows *denser* rather than larger:
+  a cottage, then a turning **windmill**, then a **castle** on the back hill, **boats** on the pond,
+  and eventually **festival bunting** strung between the rooftops — all inside the same compact
+  footprint, with the camera easing back to keep it framed.
 
 - **Every habit builds a specific building with its own personality.** Habits are tagged by
   category, and each grows its own building in the village — reading raises an ivy-clad **Library**
@@ -208,7 +213,7 @@ passphrase backup + stats CSV · animated, Compose-drawn illustrations · 10 lan
 
 ## Install
 
-Copy `release/Pact-v5.16.apk` to **both** phones — yours and each trusted person's — allow
+Copy `release/Pact-v5.17.apk` to **both** phones — yours and each trusted person's — allow
 "install from unknown sources", and follow the in-app setup. Requires Android 8.0+ (API 26).
 No Google services needed.
 
