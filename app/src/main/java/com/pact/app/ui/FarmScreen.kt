@@ -194,132 +194,189 @@ private fun FarmStat(value: String, label: String, modifier: Modifier = Modifier
 
 // ─────────────────────────────────────────────────────── the pixel farm
 
-/** A cozy night farm drawn entirely from pixels — lush when tended, wan when neglected. */
+/** A living, lush farm drawn from pixels: a farmer works, water shimmers, crops
+ * sway, clouds drift — always something happening. Wilts wan when neglected. */
 @Composable
 private fun FarmScene(snap: FarmState.Snapshot) {
-    val bob by rememberInfiniteTransition(label = "farm").animateFloat(
-        0f, (2 * Math.PI).toFloat(),
-        infiniteRepeatable(tween(2600, easing = LinearEasing), RepeatMode.Restart), label = "bob",
+    val tau = (2 * Math.PI).toFloat()
+    val t by rememberInfiniteTransition(label = "farm").animateFloat(
+        0f, tau, infiniteRepeatable(tween(3200, easing = LinearEasing), RepeatMode.Restart), label = "t",
+    )
+    // Farmer sweeps back and forth across the field.
+    val trip by rememberInfiniteTransition(label = "walk").animateFloat(
+        0f, 1f, infiniteRepeatable(tween(9000, easing = LinearEasing), RepeatMode.Restart), label = "trip",
     )
     val health = snap.health / 100f
+
     Box(
-        Modifier.fillMaxWidth().height(230.dp).clip(RoundedCornerShape(20.dp)).border(1.5.dp, CardBorder, RoundedCornerShape(20.dp)),
+        Modifier.fillMaxWidth().height(260.dp).clip(RoundedCornerShape(20.dp)).border(1.5.dp, CardBorder, RoundedCornerShape(20.dp)),
     ) {
         Canvas(Modifier.fillMaxSize()) {
-            val w = size.width
-            val h = size.height
-            // sky
-            drawRect(Brush.verticalGradient(listOf(Color(0xFF1B1B2E), Color(0xFF12121C))), size = size)
-            // moon
-            drawCircle(Color(0xFFE9F5B0), radius = h * 0.09f, center = Offset(w * 0.82f, h * 0.2f))
-            // stars
-            val stars = listOf(0.1f to 0.15f, 0.25f to 0.28f, 0.5f to 0.12f, 0.65f to 0.22f, 0.9f to 0.4f, 0.15f to 0.4f)
-            stars.forEach { (sx, sy) -> drawRect(Color(0x88FFFFFF), Offset(w * sx, h * sy), Size(3f, 3f)) }
+            val w = size.width; val h = size.height
+            val u = w / 80f
+            val gTop = h * 0.30f
 
-            // ground
-            val groundTop = h * 0.62f
-            val grass = lerp(Color(0xFF5A4A32), Color(0xFF3E6B2E), health)   // brown → green with health
-            drawRect(grass, topLeft = Offset(0f, groundTop), size = Size(w, h - groundTop))
-            drawRect(lerp(Color(0xFF4A3D28), Color(0xFF2F5222), health), topLeft = Offset(0f, groundTop), size = Size(w, 6f))
+            // sky + sun + drifting clouds
+            drawRect(Brush.verticalGradient(listOf(Color(0xFF8FD6EC), Color(0xFFC8ECF2))), size = Size(w, gTop + 8 * u))
+            drawCircle(Color(0xFFFFE7A0), radius = h * 0.055f, center = Offset(w * 0.85f, h * 0.11f))
+            cloud(w * 0.20f + w * 0.05f * sin(t), h * 0.09f, u)
+            cloud(w * 0.62f + w * 0.05f * sin(t + 2f), h * 0.16f, u * 0.75f)
 
-            val px = (w / 64f)                    // pixel unit
-            // buildings sit at the back
-            if (snap.hasBarn) sprite(BARN, barnColors(health), w * 0.04f, groundTop - 11 * px, px)
-            if (snap.hasHouse) sprite(HOUSE, houseColors(health), w * 0.78f, groundTop - 9 * px, px)
-
-            // crops in a row along the ground
-            val plots = snap.plots
-            val n = plots.size.coerceAtMost(FarmState.GRID)
-            val startX = w * 0.06f
-            val spanX = w * 0.88f
-            for (i in 0 until n) {
-                val cx = startX + spanX * (i + 0.5f) / n
-                val sway = sin(bob + i) * 1.2f * px * (plots[i] / 3f)
-                sprite(cropSprite(plots[i]), cropColors(plots[i], health, i), cx - 4 * px + sway, groundTop - 6 * px, px)
+            // grass
+            val grass = lerp(Color(0xFF9E8C58), Color(0xFF74C24E), health)
+            drawRect(grass, topLeft = Offset(0f, gTop), size = Size(w, h - gTop))
+            drawRect(lerp(Color(0xFF80703F), Color(0xFF5BAD3C), health), topLeft = Offset(0f, gTop), size = Size(w, u))
+            // grass tufts (fixed scatter)
+            val tufts = listOf(0.06f to 0.5f, 0.22f to 0.62f, 0.9f to 0.55f, 0.84f to 0.74f, 0.5f to 0.9f, 0.12f to 0.86f, 0.7f to 0.9f)
+            tufts.forEach { (tx, ty) ->
+                val c = lerp(Color(0xFF6E602F), Color(0xFF4E9A32), health)
+                drawRect(c, Offset(w * tx, gTop + (h - gTop) * ty), Size(u, u * 1.4f))
+                drawRect(c, Offset(w * tx + u * 1.4f, gTop + (h - gTop) * ty - u * 0.6f), Size(u, u * 1.4f))
             }
 
-            // animals wander near the front
-            repeat(snap.animals) { a ->
-                val cx = w * (0.15f + 0.16f * a)
-                val hop = (sin(bob * 1.6f + a * 2) * 2f * px).coerceAtLeast(0f)
-                sprite(CHICKEN, chickenColors(health), cx, h - 7 * px - hop, px)
+            // pond (left) with shimmer
+            val pcx = w * 0.15f; val pcy = h * 0.80f; val prw = w * 0.13f; val prh = h * 0.10f
+            drawOval(Color(0xFF2E93CE), Offset(pcx - prw, pcy - prh), Size(prw * 2, prh * 2))
+            drawOval(Color(0xFF57BDEC), Offset(pcx - prw * 0.7f, pcy - prh * 0.55f), Size(prw * 1.4f, prh * 1.1f))
+            listOf(Triple(-0.3f, -0.2f, 0f), Triple(0.25f, 0.15f, 2f), Triple(-0.05f, 0.35f, 4f)).forEach { (sx, sy, ph) ->
+                if (sin(t * 2f + ph) > 0.3f) drawRect(Color(0xCCFFFFFF), Offset(pcx + sx * prw, pcy + sy * prh), Size(u, u))
+            }
+
+            // tilled field (centre) with crop rows
+            val fx = w * 0.30f; val fy = h * 0.42f; val fw = w * 0.34f; val fh = h * 0.40f
+            drawRect(lerp(Color(0xFF6E5B3A), Color(0xFF7A5230), health), Offset(fx, fy), Size(fw, fh))
+            for (r in 0..3) drawRect(Color(0x22000000), Offset(fx, fy + fh * (r + 0.5f) / 4f), Size(fw, u * 0.6f))
+            val plots = snap.plots
+            val cols = 4
+            for (i in plots.indices.take(FarmState.GRID)) {
+                val col = i % cols; val row = i / cols
+                val cxp = fx + fw * (col + 0.5f) / cols
+                val cyp = fy + fh * (row + 0.5f) / (FarmState.GRID / cols)
+                val sway = sin(t + i) * 1.1f * u * (plots[i] / 3f)
+                sprite(cropSprite(plots[i]), cropColors(plots[i], health, i), cxp - 4 * u + sway, cyp - 7 * u, u)
+            }
+
+            // trees (sway)
+            tree(w * 0.045f, gTop + h * 0.10f, u, health, sin(t))
+            tree(w * 0.70f, gTop + h * 0.06f, u * 0.9f, health, sin(t + 1.5f))
+
+            // a house being built, or the finished house with chimney smoke
+            val hx = w * 0.74f; val hy = h * 0.50f
+            if (snap.hasHouse) {
+                sprite(HOUSE, houseColors(health), hx, hy, u)
+                for (k in 0..2) {
+                    val prog = ((t / tau) + k / 3f) % 1f
+                    drawCircle(Color(0xFFDDE6EC).copy(alpha = (1f - prog) * 0.5f), u * (1f + prog), Offset(hx + 7.5f * u, hy - prog * h * 0.14f))
+                }
+            } else {
+                sprite(SCAFFOLD, scaffoldColors(), hx, hy, u)
+                // a builder hammering (bobs)
+                val ham = (sin(t * 3f).coerceAtLeast(0f)) * 2f * u
+                sprite(farmerFrame(0, false), farmerColors(), hx - 4 * u, hy + 2 * u - ham, u)
+            }
+
+            // chickens hop near the front
+            repeat(snap.animals.coerceAtMost(3)) { a ->
+                val cx = w * (0.30f + 0.12f * a)
+                val hop = (sin(t * 1.8f + a * 2) * 2f * u).coerceAtLeast(0f)
+                sprite(CHICKEN, chickenColors(health), cx, h - 8 * u - hop, u)
+            }
+
+            // the farmer: walks the field, watering (triangle path so we know facing)
+            val pos = if (trip < 0.5f) trip * 2f else (1f - trip) * 2f
+            val facingRight = trip < 0.5f
+            val fxp = w * 0.34f + (w * 0.60f - w * 0.34f) * pos
+            val fyp = h * 0.66f
+            val step = ((t / (tau / 4f)).toInt() % 2)   // 2-frame walk cycle
+            sprite(farmerFrame(step, facingRight), farmerColors(), fxp, fyp, u, flip = !facingRight)
+            // watering can + drops
+            val canX = if (facingRight) fxp + 6 * u else fxp - 3 * u
+            sprite(CAN, canColors(), canX, fyp + 3 * u, u, flip = !facingRight)
+            for (d in 0..1) {
+                val dp = ((t / tau) + d * 0.5f) % 1f
+                drawRect(Color(0xFF6FC3E8), Offset(canX + (if (facingRight) 3f else 0f) * u, fyp + 5 * u + dp * 4 * u), Size(u * 0.8f, u * 0.8f))
             }
         }
     }
 }
 
-private fun DrawScope.sprite(rows: List<String>, colors: Map<Char, Color>, x: Float, y: Float, px: Float) {
+private fun DrawScope.sprite(rows: List<String>, colors: Map<Char, Color>, x: Float, y: Float, px: Float, flip: Boolean = false) {
     for ((r, row) in rows.withIndex()) {
-        for ((c, ch) in row.withIndex()) {
+        val cells = if (flip) row.reversed() else row
+        for ((c, ch) in cells.withIndex()) {
             val color = colors[ch] ?: continue
-            drawRect(color, topLeft = Offset(x + c * px, y + r * px), size = Size(px + 0.5f, px + 0.5f))
+            drawRect(color, topLeft = Offset(x + c * px, y + r * px), size = Size(px + 0.6f, px + 0.6f))
         }
     }
+}
+
+private fun DrawScope.cloud(cx: Float, cy: Float, u: Float) {
+    val c = Color(0xF2FFFFFF)
+    drawOval(c, Offset(cx - 6 * u, cy - 2 * u), Size(12 * u, 4 * u))
+    drawOval(c, Offset(cx - 3 * u, cy - 3.5f * u), Size(7 * u, 5 * u))
+}
+
+private fun DrawScope.tree(x: Float, baseY: Float, u: Float, health: Float, sway: Float) {
+    // trunk
+    drawRect(Color(0xFF6E4A2A), Offset(x - u, baseY - 4 * u), Size(2.4f * u, 6 * u))
+    // canopy (three blobs, sways)
+    val g1 = lerp(Color(0xFF7A7048), Color(0xFF3E8B3A), health)
+    val g2 = lerp(Color(0xFF8A804F), Color(0xFF57AD45), health)
+    val dx = sway * 1.2f * u
+    drawOval(g1, Offset(x - 7 * u + dx, baseY - 14 * u), Size(14 * u, 11 * u))
+    drawOval(g2, Offset(x - 5 * u + dx, baseY - 17 * u), Size(10 * u, 8 * u))
 }
 
 // health tint helper: fade a colour toward a wan grey-brown as the farm suffers
-private fun wilt(c: Color, health: Float): Color = lerp(Color(0xFF6E6455), c, health.coerceIn(0f, 1f))
+private fun wilt(c: Color, health: Float): Color = lerp(Color(0xFF7E7358), c, health.coerceIn(0f, 1f))
 
 private fun cropSprite(stage: Int) = when (stage) {
     0 -> CROP0; 1 -> CROP1; 2 -> CROP2; else -> CROP3
 }
 
 private fun cropColors(stage: Int, health: Float, i: Int): Map<Char, Color> {
-    val flower = listOf(Color(0xFFB19CD9), Color(0xFFFF9BB3), Color(0xFFFFD36B))[i % 3]
+    val flower = listOf(Color(0xFFE86FA6), Color(0xFFFF9BB3), Color(0xFFFFD36B))[i % 3]
     return mapOf(
-        's' to Color(0xFF6B4A2E),
-        'b' to Color(0xFF5B7A3A),
-        'g' to wilt(Color(0xFF8BD64B), health),
+        's' to Color(0xFF7A5230),
+        'b' to Color(0xFF4E8B32),
+        'g' to wilt(Color(0xFF57C23A), health),
         'f' to wilt(flower, health),
         'y' to wilt(Color(0xFFFFE066), health),
     )
 }
 
+private fun farmerFrame(step: Int, facingRight: Boolean) = if (step == 0) FARMER_A else FARMER_B
+private fun farmerColors() = mapOf(
+    'h' to Color(0xFFE7C868),   // straw hat
+    's' to Color(0xFFF0C9A4),   // skin
+    'b' to Color(0xFF4C79C9),   // overalls
+    'l' to Color(0xFF2E4A78),   // legs
+)
+private fun canColors() = mapOf('c' to Color(0xFFAEB6C0), 'm' to Color(0xFF8A929C))
+private fun scaffoldColors() = mapOf('w' to Color(0xFF8A6A44), 'p' to Color(0xFF6E5236))
+
 private fun chickenColors(health: Float) = mapOf(
-    'w' to wilt(Color(0xFFF2F2E8), health),
-    'y' to Color(0xFFFFB84D),
-    'l' to Color(0xFFCC8844),
+    'w' to wilt(Color(0xFFF6F4EA), health), 'y' to Color(0xFFFFB84D), 'l' to Color(0xFFCC8844),
 )
-
-private fun barnColors(health: Float) = mapOf(
-    'r' to wilt(Color(0xFFC85A54), health),
-    'd' to Color(0xFF3A2A22),
-)
-
 private fun houseColors(health: Float) = mapOf(
-    'h' to wilt(Color(0xFF9C7BD9), health),
-    'p' to Color(0xFF4A4458),
-    'd' to Color(0xFF2A2436),
+    'r' to Color(0xFFC85A54), 'h' to Color(0xFFE7B77A), 'p' to Color(0xFFCBA06A),
+    'd' to Color(0xFF5A3A22), 'w' to Color(0xFF7FC7E8),
 )
 
 // sprites — '.' is transparent
-private val CROP0 = listOf(
-    "........", "........", "........", "........",
-    "........", "........", ".ssssss.", "ssssssss",
-)
-private val CROP1 = listOf(
-    "........", "........", "........", "...g....",
-    "..ggg...", "...g....", ".ssssss.", "ssssssss",
-)
-private val CROP2 = listOf(
-    "........", "...g....", "..ggg...", ".ggggg..",
-    "..ggg...", "...b....", ".ssssss.", "ssssssss",
-)
-private val CROP3 = listOf(
-    "...f....", "..fyf...", ".ffyff..", "..fgf...",
-    "...g....", "...b....", ".ssssss.", "ssssssss",
-)
-private val CHICKEN = listOf(
-    ".ww...", "wwww..", "wwwwy.", "wwww..", ".l.l..",
-)
-private val BARN = listOf(
-    "....rr....", "...rrrr...", "..rrrrrr..", ".rrrrrrrr.",
-    "rrrrrrrrrr", "rr.dddd.rr", "rr.dddd.rr", "rr.dddd.rr",
-    "rrrrrrrrrr",
+private val CROP0 = listOf("........", "........", "........", "........", "........", "........", ".ssssss.", "ssssssss")
+private val CROP1 = listOf("........", "........", "........", "...g....", "..ggg...", "...g....", ".ssssss.", "ssssssss")
+private val CROP2 = listOf("........", "...g....", "..ggg...", ".ggggg..", "..ggg...", "...b....", ".ssssss.", "ssssssss")
+private val CROP3 = listOf("...f....", "..fyf...", ".ffyff..", "..fgf...", "...g....", "...b....", ".ssssss.", "ssssssss")
+private val CHICKEN = listOf(".ww...", "wwww..", "wwwwy.", "wwww..", ".l.l..")
+private val FARMER_A = listOf("..hhh..", ".hhhhh.", "..sss..", ".bbbbb.", "..bbb..", "..l.l..")
+private val FARMER_B = listOf("..hhh..", ".hhhhh.", "..sss..", ".bbbbb.", "..bbb..", "...ll..")
+private val CAN = listOf("cccm", "cccc", "cccc")
+private val SCAFFOLD = listOf(
+    "w.....w", "wwwwwww", "w.....w", "w.....w", "wwwwwww", "p.....p", "p.....p",
 )
 private val HOUSE = listOf(
-    "...hh...", "..hhhh..", ".hhhhhh.", "hhhhhhhh",
-    "pp.dd.pp", "pp.dd.pp", "pp.dd.pp", "pppppppp",
+    "..rrrrr..", ".rrrrrrr.", "rrrrrrrrr", "hhhhhhhhh", "hh.www.hh", "hh.www.hh", "hhh.d.hhh", "hhh.d.hhh",
 )
 
 @Composable

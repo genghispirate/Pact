@@ -8,7 +8,7 @@ way to more is your **circle**, the people you trust. Then the part that makes i
 your friends **share your screen time** and **race to keep the longest streak** within your
 limits. No passwords, no accounts, no servers, no codes to type.
 
-<p align="center"><em>Ready-to-install APK: <a href="release/Pact-v5.11.apk"><code>release/Pact-v5.11.apk</code></a></em></p>
+<p align="center"><em>Ready-to-install APK: <a href="release/Pact-v5.12.apk"><code>release/Pact-v5.12.apk</code></a></em></p>
 
 ---
 
@@ -60,9 +60,11 @@ This is what turns a willpower app into something you *want* to open:
 
 ## The farm — grow something for taking care of yourself
 
-Blocking is the strict edge; the **farm** is the heart. It's a cozy, pixel-art night farm
-(drawn entirely in Compose — no assets) that thrives when you look after yourself and gently
-wilts when you don't. **No guilt, no blocking** — just care:
+Blocking is the strict edge; the **farm** is the heart. It's a **living, animated pixel farm**
+(drawn entirely in Compose — no assets) where there's always something happening: a little farmer
+walks the field and waters the crops, a pond shimmers, clouds drift, crops and trees sway, chimney
+smoke rises (and a house is mid-construction until you level up). It thrives when you look after
+yourself and gently wilts when you don't. **No guilt, no blocking** — just care:
 
 - **Habits drive it.** Check off your daily habits (drink water, move, read, sleep early, or your
   own) and earn points; crops sprout and climb through growth stages, animals arrive, a barn and
@@ -176,7 +178,7 @@ passphrase backup + stats CSV · animated, Compose-drawn illustrations · 10 lan
 
 ## Install
 
-Copy `release/Pact-v5.11.apk` to **both** phones — yours and each trusted person's — allow
+Copy `release/Pact-v5.12.apk` to **both** phones — yours and each trusted person's — allow
 "install from unknown sources", and follow the in-app setup. Requires Android 8.0+ (API 26).
 No Google services needed.
 
