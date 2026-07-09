@@ -51,7 +51,9 @@ import com.pact.app.ui.theme.TextSecondary
 class MainActivity : ComponentActivity() {
 
     override fun attachBaseContext(newBase: android.content.Context) {
-        super.attachBaseContext(com.pact.app.core.LocaleHelper.wrap(newBase))
+        super.attachBaseContext(
+            runCatching { com.pact.app.core.LocaleHelper.wrap(newBase) }.getOrDefault(newBase)
+        )
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -67,25 +69,34 @@ class MainActivity : ComponentActivity() {
             return
         }
 
-        enableEdgeToEdge()
-        val state = PactState.get(this)
-        setContent {
-            PactTheme {
-                Box(
-                    Modifier
-                        .fillMaxSize()
-                        .background(MaterialTheme.colorScheme.background)
-                ) {
-                    if (!com.pact.app.core.LocaleHelper.hasChosen(this@MainActivity)) {
-                        com.pact.app.ui.LanguageScreen(onPick = { tag ->
-                            com.pact.app.core.LocaleHelper.set(this@MainActivity, tag)
-                            recreate()
-                        })
-                    } else {
-                        PactApp(state)
+        try {
+            enableEdgeToEdge()
+            val state = PactState.get(this)
+            setContent {
+                PactTheme {
+                    Box(
+                        Modifier
+                            .fillMaxSize()
+                            .background(MaterialTheme.colorScheme.background)
+                    ) {
+                        if (!com.pact.app.core.LocaleHelper.hasChosen(this@MainActivity)) {
+                            com.pact.app.ui.LanguageScreen(onPick = { tag ->
+                                com.pact.app.core.LocaleHelper.set(this@MainActivity, tag)
+                                recreate()
+                            })
+                        } else {
+                            PactApp(state)
+                        }
                     }
                 }
             }
+        } catch (t: Throwable) {
+            runCatching {
+                java.io.File(filesDir, "last_crash.txt").writeText(
+                    "MainActivity start failed:\n\n" + android.util.Log.getStackTraceString(t)
+                )
+            }
+            showCrashReport("MainActivity start failed:\n\n" + android.util.Log.getStackTraceString(t))
         }
     }
 

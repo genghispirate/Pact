@@ -21,10 +21,10 @@ class PactApp : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        // Safety net: if anything crashes, record it so the next launch can show
-        // it (instead of a silent close), then fall through to the normal handler.
-        val previous = Thread.getDefaultUncaughtExceptionHandler()
-        Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
+        // Safety net: on ANY crash, record the trace and relaunch straight into
+        // MainActivity, which shows it on screen (instead of a silent close).
+        // This catches async Compose crashes too, which a passive handler can't.
+        Thread.setDefaultUncaughtExceptionHandler { _, throwable ->
             runCatching {
                 java.io.File(filesDir, "last_crash.txt").writeText(
                     android.os.Build.MANUFACTURER + " " + android.os.Build.MODEL +
@@ -32,19 +32,42 @@ class PactApp : Application() {
                         android.util.Log.getStackTraceString(throwable)
                 )
             }
-            previous?.uncaughtException(thread, throwable)
+            runCatching {
+                startActivity(
+                    android.content.Intent(this, MainActivity::class.java)
+                        .addFlags(
+                            android.content.Intent.FLAG_ACTIVITY_NEW_TASK or
+                                android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        )
+                )
+            }
+            android.os.Process.killProcess(android.os.Process.myPid())
+            kotlin.system.exitProcess(10)
         }
 
-        // Keep home-screen widgets in sync with every state change.
-        PactState.get(this).onChanged = { PactWidget.updateAll(this) }
+        // Nothing here is allowed to take the app down. If any of it fails, we
+        // record why and carry on — the UI can still start, and MainActivity
+        // surfaces the recorded reason on this very launch instead of a silent
+        // close. (Application.onCreate runs before any Activity, so a crash here
+        // would otherwise never reach the on-screen crash reporter.)
+        try {
+            // Keep home-screen widgets in sync with every state change.
+            PactState.get(this).onChanged = { PactWidget.updateAll(this) }
 
-        // Trust network events → quiet, actionable notifications.
-        TrustNetwork.get(this).onEvent = { event, name, detail ->
-            Notifications.showNetworkEvent(this, event, name, detail)
+            // Trust network events → quiet, actionable notifications.
+            TrustNetwork.get(this).onEvent = { event, name, detail ->
+                Notifications.showNetworkEvent(this, event, name, detail)
+            }
+
+            runCatching { SyncWorker.schedule(this) }
+            runCatching { ReceiptWorker.schedule(this) }
+        } catch (t: Throwable) {
+            runCatching {
+                java.io.File(filesDir, "last_crash.txt").writeText(
+                    "Startup init failed:\n\n" + android.util.Log.getStackTraceString(t)
+                )
+            }
         }
-
-        SyncWorker.schedule(this)
-        ReceiptWorker.schedule(this)
     }
 
     /**
