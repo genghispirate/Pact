@@ -153,14 +153,16 @@ fun HomeScreen(
                     color = Periwinkle,
                 )
             }
-            IconButton(onClick = onOpenFarm) {
-                Icon(Icons.Rounded.Grass, contentDescription = stringResource(R.string.farm_title), tint = TextSecondary)
-            }
-            IconButton(onClick = onOpenCircle) {
-                Icon(Icons.Rounded.Group, contentDescription = stringResource(R.string.circle_title), tint = TextSecondary)
-            }
-            IconButton(onClick = onOpenSettings) {
-                Icon(Icons.Rounded.Settings, contentDescription = stringResource(R.string.home_settings), tint = TextSecondary)
+            // avatar chip (nav lives in the bottom bar now)
+            Box(
+                modifier = Modifier
+                    .size(42.dp)
+                    .clip(CircleShape)
+                    .background(Surface2)
+                    .border(1.5.dp, CardBorder, CircleShape),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(network.myAvatar, fontSize = 22.sp)
             }
         }
 

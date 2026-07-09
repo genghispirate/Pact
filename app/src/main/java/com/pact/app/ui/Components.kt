@@ -98,7 +98,7 @@ fun PactButton(
                     .background(Surface2)
                     .border(1.5.dp, CardBorder, shape)
                 else Modifier
-                    .background(com.pact.app.ui.theme.Periwinkle)
+                    .background(com.pact.app.ui.theme.PactGradient)
             )
             .alpha(if (enabled) 1f else 0.4f)
             .clickable(enabled = enabled) {
@@ -110,7 +110,7 @@ fun PactButton(
         Text(
             text,
             style = MaterialTheme.typography.labelLarge,
-            color = if (tonal) MaterialTheme.colorScheme.onSurface else Ink,
+            color = if (tonal) MaterialTheme.colorScheme.onSurface else com.pact.app.ui.theme.OnAccent,
             modifier = Modifier.padding(horizontal = 24.dp),
         )
     }
@@ -286,7 +286,7 @@ fun NumberedStep(number: Int, text: String) {
             Text(
                 "$number",
                 style = MaterialTheme.typography.labelMedium,
-                color = Ink,
+                color = com.pact.app.ui.theme.OnAccent,
                 fontWeight = FontWeight.Bold,
             )
         }

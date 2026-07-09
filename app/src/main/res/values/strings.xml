@@ -163,6 +163,12 @@
     <string name="widget_status_denied">Denied 🛑</string>
     <string name="widget_status_expired">Expired</string>
 
+    <!-- bottom nav -->
+    <string name="nav_home">Home</string>
+    <string name="nav_insights">Stats</string>
+    <string name="nav_squad">Squad</string>
+    <string name="nav_more">Settings</string>
+
     <!-- farm -->
     <string name="farm_title">Your Farm</string>
     <string name="farm_level">level</string>

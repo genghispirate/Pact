@@ -56,6 +56,17 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // If the last run crashed, show the trace in a plain view (no Compose,
+        // no theme — so it can't crash the same way) with a copy button.
+        val crashFile = java.io.File(filesDir, "last_crash.txt")
+        if (crashFile.exists() && crashFile.length() > 0) {
+            val trace = runCatching { crashFile.readText() }.getOrDefault("(unreadable)")
+            crashFile.delete()
+            showCrashReport(trace)
+            return
+        }
+
         enableEdgeToEdge()
         val state = PactState.get(this)
         setContent {
@@ -76,6 +87,39 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    /** Dependency-free crash screen so a startup crash is visible, not silent. */
+    private fun showCrashReport(trace: String) {
+        val scroll = android.widget.ScrollView(this)
+        val col = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.VERTICAL
+            setBackgroundColor(0xFF0A0A0F.toInt())
+            setPadding(40, 120, 40, 60)
+        }
+        val title = android.widget.TextView(this).apply {
+            text = "Pact hit an error on launch"
+            setTextColor(0xFFF4F4F8.toInt()); textSize = 20f
+            setPadding(0, 0, 0, 24)
+        }
+        val copy = android.widget.Button(this).apply {
+            text = "Copy details"
+            setOnClickListener {
+                val cm = getSystemService(android.content.ClipboardManager::class.java)
+                cm.setPrimaryClip(android.content.ClipData.newPlainText("Pact crash", trace))
+                android.widget.Toast.makeText(this@MainActivity, "Copied", android.widget.Toast.LENGTH_SHORT).show()
+            }
+        }
+        val body = android.widget.TextView(this).apply {
+            text = trace
+            setTextColor(0xFF9A9AB0.toInt()); textSize = 12f
+            typeface = android.graphics.Typeface.MONOSPACE
+            setTextIsSelectable(true)
+            setPadding(0, 24, 0, 0)
+        }
+        col.addView(title); col.addView(copy); col.addView(body)
+        scroll.addView(col)
+        setContentView(scroll)
     }
 
     // Fast in-app sync only while a screen is visible.
@@ -123,50 +167,69 @@ private fun PactApp(state: PactState) {
         return
     }
 
-    when (screen) {
-        Screen.Home -> HomeScreen(
-            state = state,
-            onAddApps = { screen = Screen.AddApps },
-            onOpenSettings = { screen = Screen.Settings },
-            onOpenStats = { screen = Screen.Stats },
-            onOpenCircle = { screen = Screen.Circle },
-            onOpenChallenges = { screen = Screen.Challenges },
-            onOpenReceipts = { screen = Screen.Receipts },
-            onOpenFarm = { screen = Screen.Farm },
-        )
-        Screen.Farm -> {
-            BackHandler { screen = Screen.Home }
-            com.pact.app.ui.FarmScreen(onBack = { screen = Screen.Home })
+    val topLevel = screen in setOf(Screen.Home, Screen.Stats, Screen.Circle, Screen.Farm, Screen.Settings)
+    // On a top-level tab, back returns to Home (except Home itself, which exits).
+    if (topLevel && screen != Screen.Home) BackHandler { screen = Screen.Home }
+
+    Column(Modifier.fillMaxSize()) {
+        Box(Modifier.weight(1f)) {
+            when (screen) {
+                Screen.Home -> HomeScreen(
+                    state = state,
+                    onAddApps = { screen = Screen.AddApps },
+                    onOpenSettings = { screen = Screen.Settings },
+                    onOpenStats = { screen = Screen.Stats },
+                    onOpenCircle = { screen = Screen.Circle },
+                    onOpenChallenges = { screen = Screen.Challenges },
+                    onOpenReceipts = { screen = Screen.Receipts },
+                    onOpenFarm = { screen = Screen.Farm },
+                )
+                Screen.Farm -> com.pact.app.ui.FarmScreen(onBack = { screen = Screen.Home })
+                Screen.Challenges -> {
+                    BackHandler { screen = Screen.Home }
+                    ChallengesScreen(state = state, onBack = { screen = Screen.Home })
+                }
+                Screen.Receipts -> {
+                    BackHandler { screen = Screen.Home }
+                    ReceiptsScreen(state = state, onBack = { screen = Screen.Home })
+                }
+                Screen.AddApps -> AddAppsScreen(
+                    state = state,
+                    alreadyBlocked = snapshot.blocked,
+                    onBack = { screen = Screen.Home },
+                )
+                Screen.Settings -> SettingsScreen(state = state, onBack = { screen = Screen.Home })
+                Screen.Stats -> StatsScreen(state = state, onBack = { screen = Screen.Home })
+                Screen.Circle -> CircleScreen(
+                    state = state,
+                    onBack = { screen = Screen.Home },
+                    onOpenChat = { id -> chatContactId = id; screen = Screen.Chat },
+                )
+                Screen.Chat -> chatContactId?.let { id ->
+                    ChatScreen(contactId = id, onBack = { screen = Screen.Circle })
+                } ?: run { screen = Screen.Home }
+            }
         }
-        Screen.Challenges -> {
-            BackHandler { screen = Screen.Home }
-            ChallengesScreen(state = state, onBack = { screen = Screen.Home })
+        if (topLevel) {
+            com.pact.app.ui.PactBottomBar(
+                current = when (screen) {
+                    Screen.Stats -> com.pact.app.ui.BottomDest.STATS
+                    Screen.Farm -> com.pact.app.ui.BottomDest.FARM
+                    Screen.Circle -> com.pact.app.ui.BottomDest.CIRCLE
+                    Screen.Settings -> com.pact.app.ui.BottomDest.SETTINGS
+                    else -> com.pact.app.ui.BottomDest.HOME
+                },
+                onSelect = { dest ->
+                    screen = when (dest) {
+                        com.pact.app.ui.BottomDest.HOME -> Screen.Home
+                        com.pact.app.ui.BottomDest.STATS -> Screen.Stats
+                        com.pact.app.ui.BottomDest.FARM -> Screen.Farm
+                        com.pact.app.ui.BottomDest.CIRCLE -> Screen.Circle
+                        com.pact.app.ui.BottomDest.SETTINGS -> Screen.Settings
+                    }
+                },
+            )
         }
-        Screen.Receipts -> {
-            BackHandler { screen = Screen.Home }
-            ReceiptsScreen(state = state, onBack = { screen = Screen.Home })
-        }
-        Screen.AddApps -> AddAppsScreen(
-            state = state,
-            alreadyBlocked = snapshot.blocked,
-            onBack = { screen = Screen.Home },
-        )
-        Screen.Settings -> {
-            BackHandler { screen = Screen.Home }
-            SettingsScreen(state = state, onBack = { screen = Screen.Home })
-        }
-        Screen.Stats -> {
-            BackHandler { screen = Screen.Home }
-            StatsScreen(state = state, onBack = { screen = Screen.Home })
-        }
-        Screen.Circle -> CircleScreen(
-            state = state,
-            onBack = { screen = Screen.Home },
-            onOpenChat = { id -> chatContactId = id; screen = Screen.Chat },
-        )
-        Screen.Chat -> chatContactId?.let { id ->
-            ChatScreen(contactId = id, onBack = { screen = Screen.Circle })
-        } ?: run { screen = Screen.Home }
     }
 }
 

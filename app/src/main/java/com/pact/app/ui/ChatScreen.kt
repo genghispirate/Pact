@@ -178,7 +178,7 @@ fun ChatScreen(contactId: String, onBack: () -> Unit) {
                 },
                 modifier = Modifier.clip(RoundedCornerShape(16.dp)).background(PactGradient),
             ) {
-                Icon(Icons.AutoMirrored.Rounded.Send, contentDescription = stringResource(R.string.chat_send), tint = Ink)
+                Icon(Icons.AutoMirrored.Rounded.Send, contentDescription = stringResource(R.string.chat_send), tint = com.pact.app.ui.theme.OnAccent)
             }
         }
     }

@@ -153,7 +153,7 @@ fun ArtLockedPhone() {
             )
             // lock badge
             GlassTile(sizeDp = 76, corner = 26, gradient = PactGradient) {
-                Icon(Icons.Rounded.Lock, contentDescription = null, tint = Ink, modifier = Modifier.size(38.dp))
+                Icon(Icons.Rounded.Lock, contentDescription = null, tint = com.pact.app.ui.theme.OnAccent, modifier = Modifier.size(38.dp))
             }
         }
     }
@@ -198,7 +198,7 @@ fun ArtCircle() {
             }
             // you, at the centre, holding a heart
             GlassTile(sizeDp = 84, corner = 42, gradient = PactGradient) {
-                Icon(Icons.Rounded.Favorite, contentDescription = null, tint = Ink, modifier = Modifier.size(38.dp))
+                Icon(Icons.Rounded.Favorite, contentDescription = null, tint = com.pact.app.ui.theme.OnAccent, modifier = Modifier.size(38.dp))
             }
         }
     }

@@ -8,7 +8,7 @@ way to more is your **circle**, the people you trust. Then the part that makes i
 your friends **share your screen time** and **race to keep the longest streak** within your
 limits. No passwords, no accounts, no servers, no codes to type.
 
-<p align="center"><em>Ready-to-install APK: <a href="release/Pact-v5.7.apk"><code>release/Pact-v5.7.apk</code></a></em></p>
+<p align="center"><em>Ready-to-install APK: <a href="release/Pact-v5.8.apk"><code>release/Pact-v5.8.apk</code></a></em></p>
 
 ---
 
@@ -158,8 +158,8 @@ gracefully without them.
 
 ## Also included
 
-A **"Neo-Brutalism × Tokyo Nightmode"** interface (obsidian + electric-lime, Space Grotesk / Inter,
-bundled offline) · a first-launch **language drop-in** (10 languages, applied per-app, no system
+A **deep-black interface with a violet hero accent** (a premium OLED palette — black + purple,
+green for good/online, coral for stop) and a **bottom nav with a raised Farm button** · a first-launch **language drop-in** (10 languages, applied per-app, no system
 trip) · **emoji squad avatars** exchanged at pairing · a home **co-op tower** that grows with the
 squad's combined streak · per-app daily limits · **challenges & a live streak leaderboard** ·
 end-to-end-encrypted screen-time sharing · **live squad presence** (a coarse, short-lived
@@ -176,7 +176,7 @@ passphrase backup + stats CSV · animated, Compose-drawn illustrations · 10 lan
 
 ## Install
 
-Copy `release/Pact-v5.7.apk` to **both** phones — yours and each trusted person's — allow
+Copy `release/Pact-v5.8.apk` to **both** phones — yours and each trusted person's — allow
 "install from unknown sources", and follow the in-app setup. Requires Android 8.0+ (API 26).
 No Google services needed.
 

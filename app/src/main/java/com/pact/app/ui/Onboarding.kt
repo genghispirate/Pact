@@ -872,7 +872,7 @@ private fun SealStep(circleCount: Int, onFinish: () -> Unit) {
             Icon(
                 Icons.Rounded.Check,
                 contentDescription = null,
-                tint = Ink,
+                tint = com.pact.app.ui.theme.OnAccent,
                 modifier = Modifier.size(52.dp),
             )
         }

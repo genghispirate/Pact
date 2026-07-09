@@ -20,6 +20,21 @@ class PactApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
+
+        // Safety net: if anything crashes, record it so the next launch can show
+        // it (instead of a silent close), then fall through to the normal handler.
+        val previous = Thread.getDefaultUncaughtExceptionHandler()
+        Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
+            runCatching {
+                java.io.File(filesDir, "last_crash.txt").writeText(
+                    android.os.Build.MANUFACTURER + " " + android.os.Build.MODEL +
+                        " · Android " + android.os.Build.VERSION.SDK_INT + "\n\n" +
+                        android.util.Log.getStackTraceString(throwable)
+                )
+            }
+            previous?.uncaughtException(thread, throwable)
+        }
+
         // Keep home-screen widgets in sync with every state change.
         PactState.get(this).onChanged = { PactWidget.updateAll(this) }
 

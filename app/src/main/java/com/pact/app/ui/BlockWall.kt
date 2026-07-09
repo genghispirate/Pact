@@ -139,7 +139,7 @@ fun BlockWall(
                     Icon(
                         Icons.Rounded.Lock,
                         contentDescription = null,
-                        tint = Ink,
+                        tint = com.pact.app.ui.theme.OnAccent,
                         modifier = Modifier.size(16.dp),
                     )
                 }
