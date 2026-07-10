@@ -65,6 +65,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.pact.app.R
 import com.pact.app.core.FarmState
+import com.pact.app.ui.world.WorldCanvas
+import com.pact.app.ui.world.WorldInfoSheet
+import com.pact.app.ui.world.WorldTap
 import com.pact.app.ui.theme.CardBorder
 import com.pact.app.ui.theme.Ink
 import com.pact.app.ui.theme.Mint
@@ -124,7 +127,7 @@ fun FarmScreen(onBack: () -> Unit) {
                     Modifier.fillMaxWidth().height(360.dp).clip(RoundedCornerShape(24.dp))
                         .border(1.5.dp, CardBorder, RoundedCornerShape(24.dp)),
                 ) {
-                    WorldDiorama(snap, Modifier.fillMaxSize(), onTapObject = { worldSel = it as? WorldTap })
+                    WorldCanvas(snap, Modifier.fillMaxSize(), onTap = { worldSel = it })
                 }
             }
 

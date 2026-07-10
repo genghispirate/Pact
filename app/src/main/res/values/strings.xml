@@ -15,28 +15,28 @@
     <string name="common_skip">Skip</string>
 
     <!-- intro -->
-    <string name="intro_page1_title">Limits that actually work</string>
-    <string name="intro_page1_body">Screen-time limits are easy to ignore. Pact gives each app a daily budget — and when it\'s up, the app actually locks. 📱➡️🗑️</string>
-    <string name="intro_page2_title">Build your squad</string>
-    <string name="intro_page2_body">Lock each other out of the doomscroll. Want more time? Ask your squad — they hold the key, not your willpower. 👯➡️🔒</string>
-    <string name="intro_page3_title">No accounts. Pure privacy.</string>
-    <string name="intro_page3_body">No email, no password, no servers. Everything is end-to-end encrypted — nobody in between can read a thing, not even us. 🚀</string>
-    <string name="intro_welcome_title">Meet Pact</string>
-    <string name="intro_welcome_body">A calmer relationship with your phone, held together by the people who care about you.</string>
+    <string name="intro_page1_title">Meet your world</string>
+    <string name="intro_page1_body">A tiny place that grows every time you look after yourself. Watch it fill with gardens, villagers, and light.</string>
+    <string name="intro_page2_title">Habits build it</string>
+    <string name="intro_page2_body">Reading raises a library. Sleep grows a moon garden. Less scrolling, more flowers. Small days, visible change.</string>
+    <string name="intro_page3_title">Friends can visit</string>
+    <string name="intro_page3_body">Share your world, keep streaks together, and cheer each other on. Private by design — no accounts, and nothing leaves your phones unprotected.</string>
+    <string name="intro_welcome_title">Pact</string>
+    <string name="intro_welcome_body">A tiny world that grows when you do.</string>
     <string name="intro_welcome_cta">Get started</string>
     <string name="intro_get_started">Let\'s go</string>
 
     <!-- role select -->
     <string name="role_title">Who\'s setting up this phone?</string>
     <string name="role_body">Pact has two sides: the person locking their apps, and the trusted people who help hold them.</string>
-    <string name="role_user_title">Block my apps</string>
-    <string name="role_user_body">I want to lock distracting apps and let people I trust hold the key.</string>
-    <string name="role_sponsor_title">I\'m the sponsor</string>
-    <string name="role_sponsor_body">Someone I care about asked me to hold their unlock codes.</string>
+    <string name="role_user_title">Start my world</string>
+    <string name="role_user_body">Grow a world from my habits, and put my most distracting apps on a budget.</string>
+    <string name="role_sponsor_title">I\'m here for a friend</string>
+    <string name="role_sponsor_body">Someone asked me to help them stay accountable.</string>
 
-    <!-- guardian step -->
-    <string name="guardian_title">Choose your sponsor</string>
-    <string name="guardian_body">Pick someone who wants to see you succeed — a partner, a parent, a close friend. They\'ll hold the unlock codes, so every unlock starts with asking them.</string>
+    <!-- friend step -->
+    <string name="guardian_title">Choose your friend</string>
+    <string name="guardian_body">Pick someone who wants to see you succeed — a partner, a parent, a close friend. They\'ll hold your key, so extra time starts with asking them.</string>
     <string name="guardian_name_label">Their name</string>
     <string name="guardian_hint">Pick someone easy to reach — you\'ll need them every time you want back in.</string>
 
@@ -46,7 +46,7 @@
     <string name="pair_qr_desc">Pairing QR code</string>
     <string name="pair_on_their_phone">On %1$s\'s phone:</string>
     <string name="pair_step1">Install Pact — the same app you\'re using now</string>
-    <string name="pair_step2">During setup, pick “I\'m the sponsor”</string>
+    <string name="pair_step2">During setup, pick “I\'m here for a friend”</string>
     <string name="pair_step3">Scan this QR code with the scan button there</string>
     <string name="pair_alt_authenticator">Rather not install anything? Google Authenticator or any 2FA app can scan this code too. Manual key: %1$s</string>
     <string name="pair_warning">Don\'t scan it into your own phone — you\'d be holding the key to your own lock.</string>
@@ -78,16 +78,16 @@
     <string name="often_locked">Often locked</string>
 
     <!-- seal -->
-    <string name="seal_title">You\'re all set</string>
-    <string name="seal_body">Your apps are locked. From here on, your circle decides when you get back in — and that\'s exactly the point.</string>
-    <string name="seal_begin">Begin</string>
+    <string name="seal_title">Your world is ready</string>
+    <string name="seal_body">It grows while you live well. Come back tomorrow and see what changed.</string>
+    <string name="seal_begin">See my world</string>
 
     <!-- home -->
     <string name="home_with">with %1$s</string>
     <string name="home_add_apps">Add apps</string>
     <string name="home_settings">Settings</string>
-    <string name="hero_active_title">System armed</string>
-    <string name="hero_active_sub">Your squad has your back</string>
+    <string name="hero_active_title">Shield on</string>
+    <string name="hero_active_sub">Your app budgets are being looked after</string>
     <string name="hero_down_title">The shield is off</string>
     <string name="hero_down_sub">Nothing is being blocked right now. Turn the shield back on in accessibility settings.</string>
     <string name="hero_enable">Turn the shield on</string>
@@ -109,7 +109,7 @@
     <string name="pair_code_hint">Share it with your trusted person. Works for a little while.</string>
     <string name="pair_code_share">Share code</string>
     <string name="pair_code_body">Send a trusted person an invite code over any app — they don\'t need to be with you.</string>
-    <string name="pair_share_message">Be my trusted person on Pact 🛡. Install Pact, choose \"I\'m a trusted person\", and enter this code: %1$s</string>
+    <string name="pair_share_message">Join my world on Pact 🌱 Install it, choose \"I\'m here for a friend\", and enter this code: %1$s</string>
     <string name="pair_enter_code_hint">Not together? Enter the invite code they sent you.</string>
     <string name="pair_enter_code_label">Invite code</string>
     <string name="pair_connect">Connect</string>
@@ -142,30 +142,30 @@
     <string name="limit_h_m">%1$dh %2$dm</string>
     <string name="limits_step_title">Set your daily limits</string>
     <string name="limits_step_body">You don\'t have to quit — just set how long each app gets per day. Slide to the left for a hard lock.</string>
-    <string name="wall_limit_reached">That\'s your %1$d min for today. Brain rot incoming 🧠</string>
+    <string name="wall_limit_reached">That\'s your %1$d minutes for today. It\'ll be back tomorrow.</string>
 
-    <string name="squad_tower_label">SQUAD TOWER</string>
-    <string name="squad_streak_unit">🔥 team streak</string>
+    <string name="squad_tower_label">YOUR FRIENDS</string>
+    <string name="squad_streak_unit">team streak</string>
     <string name="presence_zone">in the zone</string>
     <string name="presence_focus">focusing</string>
     <string name="presence_off">off track</string>
     <string name="presence_idle">idle</string>
 
     <!-- request-in-chat widget -->
-    <string name="widget_wants">Wants %1$s · +%2$d min 🔓</string>
-    <string name="widget_grant">Grant 🔑</string>
-    <string name="widget_deny">Deny 🛑</string>
-    <string name="widget_granted">Granted 🔑</string>
-    <string name="widget_denied">Denied 🛑</string>
+    <string name="widget_wants">Wants %1$s · +%2$d min</string>
+    <string name="widget_grant">Grant</string>
+    <string name="widget_deny">Deny</string>
+    <string name="widget_granted">Granted</string>
+    <string name="widget_denied">Denied</string>
     <string name="widget_you_asked">You asked for +%1$d min of %2$s</string>
-    <string name="widget_status_waiting">Waiting on your squad…</string>
-    <string name="widget_status_granted">Granted 🔑 — you\'re in</string>
-    <string name="widget_status_denied">Denied 🛑</string>
+    <string name="widget_status_waiting">Waiting on your friends…</string>
+    <string name="widget_status_granted">Granted — you\'re in</string>
+    <string name="widget_status_denied">Denied</string>
     <string name="widget_status_expired">Expired</string>
 
     <!-- focus session screen -->
     <string name="focus_screen_title">Focus</string>
-    <string name="focus_deep_work">Deep Work</string>
+    <string name="focus_deep_work">Deep focus</string>
     <string name="focus_until_time">Until %1$s</string>
     <string name="focus_ready">Ready when you are</string>
     <string name="focus_stop">Stop session</string>
@@ -178,22 +178,37 @@
     <string name="greet_evening">Good evening</string>
     <string name="greet_friend">friend</string>
     <string name="greet_line">%1$s, %2$s</string>
-    <string name="greet_sub">Stay focused. You\'ve got this.</string>
+    <string name="greet_sub">Your world kept growing.</string>
 
     <!-- bottom nav -->
-    <string name="nav_home">Home</string>
-    <string name="nav_insights">Stats</string>
-    <string name="nav_squad">Squad</string>
-    <string name="nav_more">Settings</string>
+    <string name="nav_home">Today</string>
+    <string name="nav_insights">Progress</string>
+    <string name="nav_squad">Friends</string>
+    <string name="nav_more">You</string>
+    <string name="tab_today">Today</string>
+    <string name="tab_friends">Friends</string>
+    <string name="tab_world">World</string>
+    <string name="tab_progress">Progress</string>
+    <string name="tab_you">You</string>
+
+    <!-- news on open (DESIGN.md P1) -->
+    <string name="news_expedition">While you were away: %1$s came home with something.</string>
+    <string name="news_stage">While you were away: the %1$s grew.</string>
+    <string name="news_animal_fox">A fox has started visiting at dusk.</string>
+    <string name="news_recovered">Your world perked up again.</string>
+    <string name="news_quiet">Your world rested while you were gone.</string>
+    <string name="streak_safe">A quiet day. Your streak is safe.</string>
+    <string name="welcome_back">Welcome back. Your world missed you.</string>
+    <string name="goal_label">Screen time goal</string>
 
     <!-- farm -->
-    <string name="farm_title">Your World</string>
+    <string name="farm_title">Your world</string>
     <string name="farm_level">level</string>
     <string name="farm_streak">good days</string>
     <string name="farm_health">health</string>
     <string name="farm_next_level">Growth to next level</string>
-    <string name="farm_habits_label">Tend your farm</string>
-    <string name="farm_habits_hint">Check off a habit to grow your farm. Skip your days and it slowly wilts — no guilt, just care.</string>
+    <string name="farm_habits_label">Today\'s habits</string>
+    <string name="farm_habits_hint">Small check-ins, visible change. Skip a day and your world just rests.</string>
     <string name="farm_add_habit">Add a habit</string>
     <string name="farm_habit_name">Habit name</string>
     <string name="farm_add">Add</string>
@@ -208,7 +223,7 @@
     <string name="exp_section">Expeditions</string>
     <string name="exp_title">Send a villager exploring</string>
     <string name="exp_hint">Pick a trip. Your villager heads out and comes back with something new for your world.</string>
-    <string name="exp_need_habit">Check off a habit today to send a villager exploring.</string>
+    <string name="exp_need_habit">Check one habit today and a villager will be ready to explore.</string>
     <string name="exp_returned">%1$s is back — see what they found!</string>
     <string name="exp_collect">Collect reward</string>
     <string name="exp_back_in">Back in %1$s</string>
@@ -216,20 +231,20 @@
     <string name="exp_reward_body">They brought back a %1$s for your world.</string>
     <string name="exp_reward_ok">Place it</string>
 
-    <!-- weekly receipt -->
-    <string name="receipts_title">Receipts</string>
-    <string name="receipt_title">WEEKLY RECEIPT</string>
+    <!-- weekly postcard -->
+    <string name="receipts_title">Postcards</string>
+    <string name="receipt_title">A postcard from your world</string>
     <string name="receipt_streak">Day streak</string>
     <string name="receipt_interventions">Pact stepped in</string>
     <string name="receipt_walkaways">Walk-aways</string>
-    <string name="receipt_denied">Squad denied</string>
-    <string name="receipt_tower">Tower level</string>
-    <string name="receipt_footer">pact · join me</string>
-    <string name="receipt_share_button">Share my week 🧾</string>
-    <string name="receipt_share_hint">Drop it on your story — it reps Pact 🛡</string>
-    <string name="receipt_caption">My week on Pact 🛡 — staying off the doomscroll with my squad. Join me.</string>
-    <string name="notif_receipt_title">Your week is ready 🧾</string>
-    <string name="notif_receipt_body">See your Pact receipt and share it with the squad.</string>
+    <string name="receipt_denied">Asked a friend</string>
+    <string name="receipt_tower">World level</string>
+    <string name="receipt_footer">pact · grow with me</string>
+    <string name="receipt_share_button">Share this week</string>
+    <string name="receipt_share_hint">A little proof you showed up.</string>
+    <string name="receipt_caption">My week in Pact — growing a world by living better.</string>
+    <string name="notif_receipt_title">Your postcard is ready</string>
+    <string name="notif_receipt_body">A little week in review from your world.</string>
 
     <!-- challenges &amp; leaderboard -->
     <string name="challenges_title">Challenges</string>
@@ -250,9 +265,9 @@
     <string name="challenge_join">Join</string>
     <string name="challenge_no_thanks">Not now</string>
     <string name="challenge_start_title">Start a challenge</string>
-    <string name="challenge_start_body">Dare your friends to keep the longest streak within their daily limits. Highest streak wins.</string>
+    <string name="challenge_start_body">Invite friends to keep their streaks side by side. Longest streak leads.</string>
     <string name="challenge_start_button">New challenge</string>
-    <string name="challenge_need_friends">Add a friend to your circle first.</string>
+    <string name="challenge_need_friends">Add a friend first.</string>
     <string name="challenge_create_title">New challenge</string>
     <string name="challenge_name_label">Name</string>
     <string name="challenge_length_label">Length</string>
@@ -306,34 +321,34 @@
 
     <!-- settings -->
     <string name="settings_title">Settings</string>
-    <string name="settings_sponsor_section">Your sponsor</string>
-    <string name="settings_paired">Paired — they hold your unlock codes</string>
-    <string name="settings_change_sponsor">Change sponsor…</string>
-    <string name="settings_change_sponsor_hint">Changing sponsors needs a code from your current one, then pairs a brand-new key.</string>
+    <string name="settings_sponsor_section">Your friends</string>
+    <string name="settings_paired">Connected — they can cheer you on</string>
+    <string name="settings_change_sponsor">Change friend…</string>
+    <string name="settings_change_sponsor_hint">Changing who holds your key needs a code from your current friend, then pairs a brand-new key.</string>
     <string name="settings_strict_section">Strict mode</string>
     <string name="strict_title">Lock system Settings too</string>
     <string name="strict_body">Stops the shield from being switched off quietly — opening Android Settings will ask for a code as well. Turning strict mode on is free; turning it off needs a code.</string>
     <string name="settings_how_section">How Pact works</string>
-    <string name="how_body">Pact runs entirely on this phone — no account, no server, no internet. Unlock codes are standard authenticator codes (TOTP): your sponsor\'s phone and yours compute the same 6-digit number from a shared key and the clock, so codes work even with both phones offline.\n\nThe key appeared exactly once, during setup, and only your sponsor has it. On this phone it\'s stored encrypted inside the Android Keystore.</string>
-    <string name="settings_danger">Danger zone</string>
+    <string name="how_body">Pact runs entirely on this phone — no account, no server, no internet needed. When a friend holds your key, their phone and yours compute the same 6-digit number from that key and the clock, so codes work even with both phones offline.\n\nThe key appeared exactly once, during setup, and only your friend has it. On this phone it\'s stored safely inside your phone\'s secure storage.</string>
+    <string name="settings_danger">Careful</string>
     <string name="reset_action">End the Pact and reset…</string>
     <string name="reset_hint">Removes every lock and starts over. Needs a code from %1$s.</string>
     <string name="strict_off_title">Turn off strict mode?</string>
-    <string name="change_sponsor_title">Change sponsor?</string>
+    <string name="change_sponsor_title">Change friend?</string>
     <string name="change_sponsor_body">First, a code from %1$s to approve the change.</string>
     <string name="end_pact_title">End the Pact?</string>
     <string name="end_pact_body">Ask %1$s for the current code to remove every lock and reset.</string>
-    <string name="repair_new_sponsor">New sponsor</string>
+    <string name="repair_new_sponsor">New friend</string>
     <string name="repair_scan_title">Scan on their phone</string>
-    <string name="repair_body_qr">On %1$s\'s phone: install Pact and choose “I\'m the sponsor”, or scan with Google Authenticator. Manual key:\n%2$s</string>
+    <string name="repair_body_qr">On %1$s\'s phone: install Pact and choose “I\'m here for a friend”, or scan with Google Authenticator. Manual key:\n%2$s</string>
     <string name="repair_enter_code">Enter the current code from %1$s to seal the new Pact.</string>
     <string name="repair_wrong">That didn\'t match — try the code they see right now.</string>
     <string name="they_added_it">They\'ve added it</string>
 
-    <!-- sponsor -->
+    <!-- friend-with-the-key -->
     <string name="sponsor_setup_title">You hold the key</string>
-    <string name="sponsor_setup_body">Someone you care about is locking their distracting apps, and they chose you as their sponsor. When they want back in, they\'ll ask you for the 6-digit code shown here.\n\nTheir phone is showing a QR code during setup — scan it below.</string>
-    <string name="sponsor_badge">Sponsor</string>
+    <string name="sponsor_setup_body">Someone you care about is putting their distracting apps on a budget, and they chose you to hold the key. When they want extra time, they\'ll ask you for the 6-digit code shown here.\n\nTheir phone is showing a QR code during setup — scan it below.</string>
+    <string name="sponsor_badge">Friend</string>
     <string name="sponsor_hint_codes">When they ask for an unlock, read them the code. It changes every 30 seconds and needs no internet.</string>
     <string name="sponsor_scan_hint">Point the camera at the QR code on their phone — it\'s on the “Hand over the key” step of their setup.</string>
     <string name="sponsor_scan_button">Scan their QR code</string>
@@ -347,7 +362,7 @@
     <string name="sponsor_empty">No keys yet. Tap + and scan the QR code on their phone.</string>
     <string name="sponsor_add_person">Add a person</string>
     <string name="sponsor_remove_title">Remove %1$s?</string>
-    <string name="sponsor_remove_body">You won\'t be able to give %1$s unlock codes anymore. They\'d have to pair with a sponsor again to change anything.</string>
+    <string name="sponsor_remove_body">You won\'t be able to give %1$s codes anymore. They\'d have to pair with a friend again to change anything.</string>
     <string name="sponsor_key_error">This key can\'t be read from secure storage.</string>
     <string name="scan_not_pact">That QR code isn\'t a Pact key. Make sure their phone is showing the pairing screen.</string>
 
@@ -381,7 +396,7 @@
     <string name="wall_open_5m">Open for 5 minutes</string>
     <string name="wall_open_15m">Open for 15 minutes</string>
     <string name="wall_cooldown">Self-unlock is resting for %1$s. A code from %2$s still works.</string>
-    <string name="wall_use_code_instead">Use a sponsor code instead</string>
+    <string name="wall_use_code_instead">Use a friend\'s code instead</string>
 
     <!-- reflection -->
     <string name="reflect_title">Was your %1$s break worth it?</string>
@@ -458,7 +473,7 @@
     <string name="circle_step_title">Build your circle</string>
     <string name="circle_step_body">Your circle is the people who hold your locks — a partner, a parent, a close friend. When you want back in, they decide. Have them install Pact, choose “I\'m a trusted person”, and scan this code.</string>
     <string name="circle_your_name_title">Who are you?</string>
-    <string name="circle_your_name_body">Pick a face and a handle. Your squad sees this.</string>
+    <string name="circle_your_name_body">Pick a face and a name. Your friends see this.</string>
     <string name="my_name_label">Your name</string>
     <string name="circle_joined">%1$s joined your circle</string>
     <string name="circle_waiting">Waiting for someone to scan…</string>
@@ -492,10 +507,10 @@
     <string name="contact_remove_note">Removing someone needs your circle\'s approval — that\'s the point.</string>
 
     <!-- requests -->
-    <string name="request_ask">Ask your squad</string>
+    <string name="request_ask">Ask your friends</string>
     <string name="request_how_long">How much time?</string>
     <string name="request_why">Why? (they\'ll see this)</string>
-    <string name="request_send">Ask squad 🔑</string>
+    <string name="request_send">Ask friends</string>
     <string name="request_sent">Request sent</string>
     <string name="request_waiting">Your circle has been asked. You can wait here or walk away — if they say yes, the time starts automatically.</string>
     <string name="request_expires_in">Request expires in %1$s</string>
