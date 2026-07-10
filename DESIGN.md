@@ -61,8 +61,31 @@ Everything below fixes these.
 
 ## 2. Product thesis & psychology
 
-**One sentence:** *Pact is a tiny living world that grows when you live well — and your friends
-can visit.*
+> **REPOSITIONING (product-lead review, July 2026 — supersedes any "app blocker" framing).**
+> Pact is **a habit-building game where reducing screen time is how your world thrives.** The
+> world is the product and the reason people open the app; blocking is the *mechanism*, not the
+> identity. Build in this priority order, top to bottom: **(1) the world → (2) the habit loop →
+> (3) the social layer → (4) the progression system → (5) the blocking tools.** If a decision
+> serves a lower item at the expense of a higher one, the higher one wins.
+
+**One sentence (store tagline):** *Grow a living world by spending less time on the apps that
+drain you — and build it alongside your friends.*
+
+**Two locked decisions from that review:**
+- **Backend + accounts (Decision 1b).** Pact now has an app-run backend. Users sign in with
+  **Google or email**, claim a **unique username**, and find friends by username. The server
+  powers only what genuinely needs it — accounts, the social graph, island visits, gifts,
+  neighborhood rankings, trading, co-op events. Everything else stays offline-first (§15).
+- **Discipline economy (Decision 2a).** Resources exist and give depth, but are **earned only
+  from focus / habits / reduced screen time and spent only on your world. Never purchasable, no
+  loot boxes, no premium currency.** "Earned by living well, not by paying" is a core promise
+  and a competitive moat (§14).
+
+This supersedes the founding "no servers, no accounts, no Google services" constraint **for the
+social/game layer only**. The **blocking core stays fully offline and serverless** — the shield,
+per-app budgets, the wall, and the trusted-person unlock (Ed25519/relay) never require the server
+or an account, so the app is completely usable signed-out. Sign-in is required only to use social
+features. Update all "no accounts ever" copy accordingly (§15.7).
 
 The user opens the app for 20–30 seconds. In that window they must: (1) feel "I wonder what
 changed" satisfied, (2) do at most one meaningful action, (3) leave feeling slightly better.
@@ -176,26 +199,35 @@ block wall NEVER vibrates (no punishment feedback).
 
 ## 4. Information architecture (final)
 
-### 4.1 Bottom bar — five slots, world in the center
+### 4.1 Bottom bar — FOUR slots, the World IS home (product-lead §7)
+
+The World is not a tab you visit; it is the home screen you land on. Fewer pages, less
+navigation.
 
 ```
-[Today]   [Friends]   [ ● WORLD ● ]   [Progress]   [You]
- Wb Sunny   Group       Grass FAB      Insights      Person
+[ World ]   [ Friends ]   [ Stats ]   [ Profile ]
+  home        Group        Insights     Person
 ```
 
-- **Today** — greeting + news line, world peek strip, habit checklist, focus card, screen-time
-  ring, app budgets summary. (Replaces Home.)
-- **Friends** — the circle, chat, challenges, presence. (Merges Circle + Chat + Challenges.)
-- **World** (center FAB, `PactGradient`, Grass icon) — the terrarium full-bleed + structures +
-  expeditions + add habit.
-- **Progress** — streak calendar, 14-day screen-time chart, postcards (ex-receipts), insights.
-  (Merges Stats + Receipts + Insights.)
-- **You** — name/avatar, app budgets management, shield & permissions status, screen-time goal,
-  privacy, language, about. (Replaces Settings; "sponsor" identity language dies.)
+- **World (home, default landing)** — the terrarium full-bleed, edge-to-edge. Floating glass
+  overlays on top of it (never separate pages): the **news line** (P1), a compact **today strip**
+  (habit checklist + focus + screen-time ring in a bottom sheet pulled up by a small handle), the
+  stage/level/resource chips, and the tap-to-inspect sheets. Opening the app = watching your
+  world, with one pull-up for the day's actions. This satisfies the 20–30s loop with zero tab
+  hops.
+- **Friends** — your friends by username, their island snapshots (visit), gifts, challenges,
+  neighborhood ranking, co-op events, chat. (Merges the old Circle + Chat + Challenges and adds
+  the §15 social features.)
+- **Stats** — streak calendar, 14-day screen-time chart, postcards, insights, and **personal
+  history** ("hours saved → tangible things", §14.6). (Merges Stats + Receipts + Insights.)
+- **Profile** — avatar + **username** + earned **titles** (§14.5), account/sign-in (§15),
+  app-budget management, shield & permission status, screen-time goal, privacy, language, about.
 
-`Screen` enum final: `Today, World, Friends, Progress, You, Focus, AddApps, Chat` — Chat and
-AddApps and Focus are pushed screens (not tabs), everything else was merged. Back from any pushed
-screen returns to its tab; system back on a tab returns to Today; back on Today exits.
+`Screen` enum final: `World, Friends, Stats, Profile, Focus, AddApps, Chat, SignIn` — Focus,
+AddApps, Chat, SignIn are pushed screens (not tabs). Back from a pushed screen returns to its
+origin; system back on a tab returns to World; back on World exits. The old center Grass-FAB is
+gone (the whole home is the world). The habit checklist that used to be a "Today" tab is the
+pull-up sheet on World.
 
 ### 4.2 What dies
 - The separate Stats, Receipts, Challenges, Circle, Settings top-level screens (content moves).
@@ -594,21 +626,41 @@ Expeditions, decor placement, and STAGES thresholds stay exactly as implemented 
 
 ## 11. Milestones (execute in order; one commit each)
 
-| M | scope | files | definition of done |
-|---|---|---|---|
-| M0 | Tokens: replace color/typography/shape blocks per §3 with aliases | theme/Theme.kt | app compiles with zero other file changes; visual diff only |
-| M1 | Strings: §5.2 table + news/new strings; delete 9 locale folders | strings.xml, values-* | no banned word greps: `grep -riE "sponsor|squad|armed|doomscroll|danger zone|tower" app/src/main/res/values/strings.xml` returns nothing |
-| M2 | World engine refactor into `ui/world/` per §7.1 + static-layer cache §7.11 + island/sea/river fixes §7.3 + anchors §7.4 + scale §7.5 + remove emoji signs | WorldScreen.kt → 5 files | same behavior, 60fps, river ends in pond, island framed by sea |
-| M3 | Today screen per §6.2 incl. news engine P1, habit checklist move, screen-time ring | HomeScreen.kt→TodayScreen.kt, FarmState (last_seen prefs) | 2-tap rule holds; news line correct on state change |
-| M4 | World tab per §6.3; palette §7.6; buildings §7.7; grade | FarmScreen.kt→WorldTab.kt, world/* | night is cozy not murky (screenshot check), doors fit villagers |
-| M5 | Onboarding rebuild §6.1; block wall restyle §6.8 | Onboarding.kt, BlockWall.kt | fresh install reaches Today in ≤ 60s with zero permissions asked |
-| M6 | IA merge: Friends, Progress, You per §6.4–6.6; bottom bar 5 slots §4.1; delete dead screens | MainActivity, BottomBar, new tab files | every old feature reachable; back-stack rules §4.1 |
-| M7 | Life & schedule §7.8, weather crossfade §7.9, events §7.10, P5 animals, streak insurance P3, coupling §8/§9 (UsageHistory, goal, tick) | world/WorldLife.kt, FarmState, UsageHistory.kt | schedule visibly differs 9:00 vs 21:00; quiet-day freeze works (unit test dayKey math) |
-| M8 | Motion & haptics pass §3.4–3.5; celebration budget P9; notification P8 | all ui | no infinite chrome animations remain |
-| M9 | QA §13, README rewrite to v6 story, screenshots, version 6.0 (versionCode 30) | README | checklist 100% |
+**Done (v5.18–v5.21):** M0 tokens · M1 voice purge · M2 world-engine refactor · world v4 dense
+rectangular tile village (§7-B). These stand.
 
-Version numbers: M0–M2 = 5.18/.19/.20 (codes 27–29), M3–M9 land as 6.0 betas `6.0-b1…` finishing
-at 6.0 (code 30+). APK naming `release/Pact-v{X}.apk`, one APK in repo at a time.
+**Phase A — the single-player game (all offline, no account needed). Ship this first; it is the
+app's new identity.**
+
+| M | scope | key files | definition of done |
+|---|---|---|---|
+| M3 | **World is home** (§4.1): land on the tile world edge-to-edge; floating news line (P1) + pull-up "today" sheet (habit checklist + focus + screen-time ring). Delete the Today tab & center FAB. | MainActivity, BottomBar, new `WorldHome.kt`, FarmState last_seen | app opens to the world; one pull-up reaches every daily action; 2-tap rule holds |
+| M4 | **Discipline economy** (§14.1): `Economy.kt` — resource types, earn rules, sinks; wire earning into habit/focus/screen-tick; a build/shop sheet that spends resources on decor only. | core/Economy.kt, FarmState, world sheet | resources only ever increase from real actions (unit test); nothing purchasable exists in code |
+| M5 | **Progression unlocks gameplay** (§14.2): region/system unlock table; each milestone opens a real mechanic (chickens→eggs, boats→fishing, mine→stone, etc.). Infinite tail via procedural regions + seasons (§14.4). | core/Progression.kt, world/* | reaching a milestone visibly adds a mechanic, not just a prettier building |
+| M6 | **Identity & history** (§14.5–14.6): earned **titles**; **personal history** ("hours saved → tangible things"); Profile screen. | core/Titles.kt, ui/ProfileScreen.kt, UsageHistory.kt | a title unlocks and shows on Profile; history sentence renders from real usage totals |
+| M7 | **Retention calendar** (§14.3): daily merchant, daily visitor, weekend challenge, seasonal festival, rare events; P5 animals; streak insurance P3; §8/§9 coupling. | core/LiveOps.kt, world/WorldLife.kt, FarmState | opening on two different days shows different visitors/events; quiet-day freeze unit-tested |
+| M8 | **Feel pass**: motion & haptics §3.4–3.5, celebration budget P9, notification P8, delight moments §7 (bell at noon, shooting star, etc.). | all ui | no infinite chrome animation; delights fire but never block |
+
+**Phase B — accounts + social (needs the backend, §15). Start only after Phase A ships.**
+
+| M | scope | key files | definition of done |
+|---|---|---|---|
+| M9 | **Backend skeleton** (§15): `SocialBackend` interface + Firebase impl behind it; Auth (Google + email); username claim (unique, §15.3); Sign-in screen; signed-out app fully works. | core/social/*, ui/SignInScreen.kt, Profile | can sign in, claim a username, sign out; blocking core untouched and works signed-out |
+| M10 | **Friends & async social** (§15.4): find by username, friend requests, publish your world snapshot, **visit a friend's island** (read-only render), leave **gifts** (async), encouragement. | core/social/*, ui/FriendsScreen.kt, world render-from-snapshot | two accounts can befriend, visit, and gift; visit renders the same tile engine from a snapshot |
+| M11 | **Live social** (§15.5): neighborhood **rankings** (server-computed, anti-cheat §15.6), **co-op events / festivals**, optional **trading** of earned decor. | Cloud Functions, core/social/* | ranking updates from server; a trade moves a decor item between two accounts atomically |
+| M12 | **Store & v7.0**: Play Store listing per §11-B screenshots, privacy policy for the account data (§15.7), README rewrite, versionName 7.0. | README, store assets | listing tells the world→friends→streak story; policy covers stored fields |
+
+Version numbers: Phase A = 6.x (`6.0`…`6.5`, codes 31+); Phase B ships as 7.0. One APK in repo at
+a time, name `release/Pact-v{X}.apk`.
+
+### 11-B. Play Store screenshots (design them now, §11 of the review)
+Decide in 3 seconds; show the *world*, never encryption/permissions. Order:
+1. A lush level-30 world at golden hour, glass caption "Your focus built this."
+2. The pull-up habit sheet mid-check, world behind it, "Small days. Visible change."
+3. Two friends' islands side by side + a gift, "Grow it with friends."
+4. The streak calendar + a big number, "%d-day streak."
+5. Personal history card, "You saved 412 hours. That's 31 books."
+Screens 1–2 are Phase-A-shippable; 3 needs Phase B.
 
 ---
 
@@ -630,18 +682,214 @@ at 6.0 (code 30+). APK naming `release/Pact-v{X}.apk`, one APK in repo at a time
 
 ---
 
-## 13. QA checklist (release gate for 6.0)
+## 13. QA checklist → see §16
 
-Visual: single accent per card · all borders 1dp Hairline · no emoji in chrome · sentence case
-everywhere · no pure-red anywhere · world night screenshot is readable and cozy · villager fits
-door · river ends in pond · clouds never clip card corners · no ALL-CAPS except labelMedium.
-Behavior: news line changes after checking a habit and reopening · streak survives exactly one
-quiet day/week · usage ring falls back gracefully without permission · Focus completion adds
-workshop points + news · fresh install to Today < 60s, zero permission prompts · back-stack per
-§4.1 · 60fps world on a mid-range phone (no jank while scrolling Today with peek visible) ·
-rotation/theme change doesn't reset the world camera · all tap targets ≥ 48dp · postcards render
-with new copy · both repos pushed, APK attached.
+The release gate now lives in **§16** (Phase A + Phase B), updated for the world-is-home IA and
+the game/backend direction. The earlier "Today tab / river ends in pond / island framed by sea"
+checks are obsolete (superseded by the §7-B tile world and §4.1 four-tab IA).
 
 ---
 
-*End of bible. Build calmly.*
+## 14. Game design — the reason to come back (product-lead review §2–§14)
+
+The world must be a *game*, not a progress bar. Five systems make it one. All are offline; none
+require the backend.
+
+### 14.1 The discipline economy (Decision 2a — earned only, spent only on the world)
+
+Six resources. Every source is a real, healthy action; there is **no purchase path anywhere**.
+
+| resource | icon | earned by | spent on |
+|---|---|---|---|
+| **Seeds** | 🌱 | each habit checked (+2) | planting flowers/crops/trees |
+| **Wood** | 🪵 | a completed Focus session (+3 / 25min) | building & repairing structures |
+| **Stone** | 🪨 | every budgeted app kept under budget that day (+1, cap 5) | paths, walls, the mine, the castle |
+| **Flowers** | 🌸 | a full-habit day (all checked) (+1) | decorations, gifts to friends |
+| **Crystals** | 💎 | streak milestones & rare events only (scarce) | rare decorations, region unlocks |
+| **Season tickets** | 🎟️ | one per week you finish ≥5 good days | the seasonal festival track (§14.3) |
+
+Rules: resources are stored in `Economy` (prefs JSON, same pattern as `categoryPoints`). They can
+**only increase from the actions above** (enforce in one `award()` funnel; a unit test asserts no
+other writer). Sinks are always **cosmetic or gameplay unlocks**, never "pay to skip." Show a slim
+resource bar as a glass chip row on World home. No timers-to-buy, no ads, no IAP. If we ever
+monetize, it is a one-time "supporter" cosmetic pack — decided later, not now.
+
+### 14.2 Progression that unlocks *gameplay* (not just prettier tiles)
+
+Overall level (`FarmState.level`) gates a **small number of deep systems** (avoid a mechanic every
+level — §3 of the review's warning about bloat). Between milestones, everything *deepens* (more
+crop types, more decor, denser regions), it doesn't add new tutorials.
+
+| level | region/system unlocked | new *gameplay* (not just visuals) |
+|---|---|---|
+| 1 | **Clearing** | plant seeds, check habits |
+| 5 | **Garden & coop** | chickens lay **eggs** (a daily collectible → seeds) |
+| 10 | **Pond & docks** | **fishing** mini-moment (tap when the float dips → flowers/crystals) |
+| 15 | **Windmill & fields** | crops mature over days → **harvest** for wood/seeds |
+| 22 | **Harbor** | boats run **errands**: send one out, it returns in real hours with resources (the expedition system, reframed) |
+| 30 | **Mountain & mine** | spend focus to **mine** stone/crystals; deepest sink |
+| 40 | **Castle & festivals** | host a **festival** (spends season tickets → world-wide decoration event + rare decor) |
+| 50+ | **New regions, procedurally themed by season** | infinite tail (§14.4) |
+
+Each unlock is announced via P1 news ("The harbor is open — send a boat exploring") and by the
+thing actually appearing in the world. Reaching a level with no habit progress is impossible, so
+gameplay unlocks *are* discipline rewards.
+
+### 14.3 Retention calendar — "I need to come back tomorrow" (`LiveOps.kt`, seed = dayKey)
+
+All deterministic from the date + a local seed (no server needed for the single-player calendar):
+- **Daily merchant** (a caravan tile appears 1 day in ~2): offers to swap surplus resources
+  (e.g. 10 seeds → 1 crystal). One trade/day.
+- **Daily visitor**: a themed villager wanders in (a bard, a painter, a traveler) with a one-line
+  greeting and a tiny gift (a few flowers). Different each day.
+- **Weekend challenge** (Sat–Sun): a small goal ("check 3 habits both days") → season ticket.
+- **Seasonal festival** (first weekend of each real season): the world dresses up; a festival
+  track spends season tickets for exclusive seasonal decor. Rotates 4×/year → always something new.
+- **Rare events** (low daily probability, 6h cooldown, one at a time): meteor shower (tap falling
+  stars → crystals), rainbow after rain, mystery seed (plant it, it grows into a random rare
+  plant over 3 days), treasure chest (washes up on the shore → resources), world anniversary
+  (install date → a commemorative decoration).
+- **Limited decorations**: each festival's decor is only obtainable that season → collection
+  pressure without FOMO-for-money.
+
+### 14.4 Infinite progression (never "you win")
+
+Past level 50, the world grows **outward into new regions** whose theme is chosen by the current
+real season (spring meadow, summer coast, autumn woods, winter tundra) and a rotating biome list,
+so a year-2 player still sees new ground. Decoration and crop catalogs are open-ended lists we
+append to across versions. There is **no level cap and no "complete" state**; the number just
+keeps climbing and the map keeps unfurling.
+
+### 14.5 Identity — titles (`Titles.kt`)
+
+Players earn **titles** for patterns of discipline; the active title shows under their username on
+Profile and to friends (Phase B). Titles are permanent once earned. Examples & unlock rules:
+- **Forest Guardian** — Forest structure ≥ Lv5 · **Master Builder** — 10 structures finished ·
+  **Iron Discipline** — 30-day streak · **Deep Thinker** — 50 focus sessions · **Bookworm** —
+  Library ≥ Lv5 · **Focus Champion** — 100 focus hours · **Early Bird** — 20 habits checked
+  before 8am · **Night Owl** — 20 after 10pm · **Explorer** — all regions reached · **Minimalist**
+  — a week entirely under every budget.
+Titles create recognition ("that's the person with the legendary winter village") and attachment.
+
+### 14.6 Personal history — make progress tangible (`UsageHistory.kt` + `Milestones`)
+
+The app periodically translates saved time into something a human feels. "Saved time" =
+Σ over days of `max(0, goal − screenTimeMinutes)` since install (only counts days with usage
+data). Rendered on Stats and surfaced via P1 news at thresholds:
+- "You've saved **412 hours** from distracting apps."
+- "That's enough time to **read ~31 books**." (1 book ≈ 13h)
+- "Or **walk from Berlin to Hamburg**." (~289 km ≈ 60h)
+- "Or watch the Lord of the Rings trilogy **~34 times**." (~11.4h each)
+Pick the comparison that matches the current total (a small table of {hours → phrase}). This is the
+"this world represents my discipline" payoff (review §6, §14). Shareable as a postcard.
+
+---
+
+## 15. Backend & accounts (Decision 1b) — the seamless social server
+
+The blocking core stays **offline and serverless** (shield, budgets, wall, trusted-person unlock
+via the existing Ed25519/relay). The backend exists **only** for accounts and social. The app is
+100% usable **signed-out**; sign-in gates only Friends/social.
+
+### 15.1 Choice: Firebase, behind an interface
+Use **Firebase** — Auth (Google + email/password), **Firestore** (world snapshots + social graph),
+**Cloud Functions** (server-authoritative rankings, trades, anti-cheat), **App Check** (abuse). It
+is the fastest path to "sign in with Google, find friends by username" with near-zero ops and a
+generous free tier. Wrap ALL of it behind a `core/social/SocialBackend` **interface** (mirroring
+the existing `Transport` abstraction) with a `FirebaseSocial` implementation, so the provider can
+later be swapped (Supabase/custom) **without touching UI or game code**. No Firebase type may leak
+above the interface.
+
+New deps (M9 only): `com.google.firebase:firebase-auth-ktx`, `firebase-firestore-ktx`,
+`firebase-functions-ktx`, `com.google.android.gms:play-services-auth`, and the
+`com.google.gms.google-services` Gradle plugin. This intentionally supersedes the old "no Google
+services" line — note it in README.
+
+### 15.2 Setup the human must do (write this in README; code can't do it here)
+1. Create a Firebase project; add an Android app with applicationId `com.pact.app`.
+2. Enable Auth providers: Google, Email/Password.
+3. Add the SHA-1/SHA-256 of the release keystore (`keystore/pact-release.keystore`) for Google
+   Sign-In.
+4. Download `google-services.json` → `app/`. **Git-ignore it** (do not commit; it's not a secret
+   but keeps forks clean — provide `google-services.json.example`).
+5. Deploy `functions/` and `firestore.rules` (both live in the repo).
+The app must **degrade gracefully with no `google-services.json`** (social simply shows "sign-in
+unavailable"; single-player is unaffected) so the open-source build still compiles and runs.
+
+### 15.3 Identity & usernames
+- Account = Firebase UID (from Google or email). On first sign-in, force a **username claim**:
+  3–15 chars `[a-z0-9_]`, unique. Uniqueness via a `usernames/{lowercased}` doc created in a
+  transaction (fails if exists). Display name + avatar emoji stored on the profile.
+- `users/{uid}`: `{ username, displayName, avatar, title, level, worldStage, createdAt,
+  lastActive }`. Public-readable minimal card; private fields (email) never stored in Firestore
+  (Auth holds them).
+
+### 15.4 Async social (M10) — works even though friends are rarely online at the same time
+- **World snapshot**: on meaningful change (≤ 1/hour), publish `worlds/{uid}` = a compact JSON of
+  the layout inputs (level, categoryPoints, decor, titles, resources-for-display) — NOT a bitmap.
+  Visiting renders the snapshot through the **same tile engine** (`WorldCanvas` gains a
+  `fromSnapshot` path), so a visit looks identical to the owner's world, read-only.
+- **Friends**: request/accept by username; `friends/{uid}/{friendUid}` docs both sides.
+- **Gifts**: `gifts/{toUid}/{id}` = `{from, type, ts}`; delivered next time the recipient opens
+  (P1 news: "Maya sent you sunflowers"). Costs the sender Flowers (§14.1). Rate-limited.
+- **Encouragement**: lightweight reactions to a friend's streak, same delivery.
+
+### 15.5 Live social (M11)
+- **Neighborhood ranking**: a Cloud Function recomputes friend-group leaderboards (by streak, by
+  world level, by "most improved") on a schedule; client reads `rankings/{groupId}`. Multi-axis
+  per review §5 — never a single "least screen time" board.
+- **Co-op festivals**: a shared goal doc friends contribute to (`coop/{eventId}`), Function
+  validates contributions and unlocks a shared decoration for all participants.
+- **Trading**: earned decor only; a Function performs an atomic two-sided swap (never resources →
+  no economy inflation; anti-cheat §15.6).
+
+### 15.6 Anti-cheat & authority
+Anything competitive (rankings, trades, co-op) is **server-authoritative**: the client sends
+*actions/claims*, Functions validate against server-side records (e.g., streak derived from
+day-stamped check-ins the server also stores, not a client number). Rate-limit writes; App Check
+on all callable Functions; Firestore Rules deny client writes to `rankings`, `usernames`
+uniqueness, and any resource balance. Single-player resources stay client-side (no incentive to
+cheat a solo cosmetic economy), but the *displayed* competitive stats are recomputed server-side.
+
+### 15.7 Privacy posture & copy (must update — supersedes "no accounts ever")
+The old promise was "no accounts, no servers." The new, honest promise:
+> **Your world and habits live on your phone. Signing in (optional) syncs only what friends need
+> to see — your username, world snapshot, streak, and gifts — so you can play together. Your app
+> list, your screen-time details, and the blocking keys never leave your device.**
+- Blocking/trusted-person data: **never** uploaded (stays E2E/relay).
+- Uploaded: username, avatar, level/stage, streak, world *snapshot inputs*, gifts, friend edges.
+- **Not** uploaded: which apps you block, per-app usage, focus contents, private keys.
+- Provide account deletion (Function wipes `users`, `worlds`, `usernames`, `friends`, `gifts`).
+- A real privacy policy ships with M12 (Play requires it once accounts exist).
+- Sign-in copy: "Sign in to grow your world with friends. Skip to keep everything on this phone."
+
+### 15.8 Files (Phase B)
+```
+core/social/SocialBackend.kt   // interface: auth, profile, friends, snapshot, gifts, ranking, trade
+core/social/FirebaseSocial.kt  // the only file that imports Firebase
+core/social/SocialModels.kt    // Profile, FriendEdge, WorldSnapshot, Gift, RankRow, Trade
+ui/SignInScreen.kt · ui/FriendsScreen.kt · ui/VisitWorld.kt
+functions/ (TypeScript)        // rankings, trades, coop, deleteAccount, claimUsername
+firestore.rules · firestore.indexes.json
+```
+
+---
+
+## 16. QA checklist (release gate)
+
+**Phase A (6.x):** world is the home screen (no Today tab) · resources only rise from real actions
+(unit test) · nothing purchasable in code · a level milestone adds a *mechanic*, not just a sprite ·
+a title unlocks and shows on Profile · personal-history sentence renders from real totals · two
+different days show different merchant/visitor/event · quiet-day streak freeze unit-tested · single
+accent per card · 1dp hairlines · no emoji in chrome · sentence case · no pure-red · cozy night
+screenshot · villager fits door · 60fps tile world on mid-range · signed-out app fully usable.
+
+**Phase B (7.0):** signed-out app 100% functional · sign in with Google AND email · username
+uniqueness enforced server-side · visiting a friend renders their snapshot in the tile engine ·
+gift delivers on next open · ranking is server-computed and can't be client-forged · trade is
+atomic · account deletion wipes all server docs · privacy copy matches what's actually stored ·
+app builds & runs with NO `google-services.json` (social shows "unavailable").
+
+---
+
+*End of bible. Build calmly. The world is the product; blocking is how it grows.*
