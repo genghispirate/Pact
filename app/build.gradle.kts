@@ -12,8 +12,8 @@ android {
         applicationId = "com.pact.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = 29
-        versionName = "5.20"
+        versionCode = 30
+        versionName = "5.21"
     }
 
     signingConfigs {

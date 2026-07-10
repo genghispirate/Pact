@@ -519,6 +519,30 @@ festival on stage-up night (extra strings of lights) · fox/deer/owl arrivals (P
 
 ---
 
+## 7-B. ART DIRECTION OVERRIDE (user decision, July 2026) — dense rectangular tile world
+
+The world is a **dense, top-down, RECTANGULAR pixel-tile village** (Stardew-like reference the
+user supplied), NOT an isometric island. This overrides §7.2–§7.5 geometry. §7.6 lighting,
+weather, seasons, §7.11 caching, tap rules, villagers and all P-mechanics still apply.
+
+- **Map**: 18 cols × 20 rows, tile = cardWidth/18, vertically centered; overflow rows crop
+  (top-down worlds read as crops of a bigger place). PEEK shows the middle band. No sky, no sea:
+  ground fills the card edge-to-edge. Projection `P(x,y) = origin + (x·tile, y·tile)`; height =
+  drawing upward; y-sort by row. Chunky flat-color details at quarter-tile resolution, no outlines.
+- **Zone map** (authored): rows 0–4 building band (habit structures side by side with yards) ·
+  cols 12–17 rows 0–5 stone plaza (light stone, 2×2 fountain, hedges, 2 lamps) · rows 5–6 dotted
+  stone path across + spurs to doors · rows 7–12 cols 1–6 tilled field A (dark soil `#5C4328`,
+  furrows, crop rows) with a 2×3 rounded pond · cols 8–12 fenced crop field B · cols 13–16
+  rows 7–10 golden wheat patch · rows 13–15 flower meadow + campfire at (10,14) + second pond ·
+  rows 16–17 horizontal dirt road with fences · rows 18–19 orchard fringe. Trees (green/autumn/
+  pine mix) cluster cols 0–2 and along the road; density grows with level.
+- **Grass**: per-tile 4-tone variation (seeded), 1-in-6 tiles get a detail (tuft/tiny flower/
+  pebble). Never uniform.
+- **Sky replaced by ground-level atmosphere**: drifting cloud *shadows* (soft dark ellipses,
+  6% alpha), fireflies + warm windows at night, rain/snow overlays as before; grade() unchanged.
+- Landmarks keep their level gates: cottage L3 (4,2 area), windmill L6 (15,8), castle L14 → a
+  stone **keep** top-center at (8,0), boats on the meadow pond L10/22, festival bunting L30.
+
 ## 8. World ↔ wellbeing coupling (health & look)
 
 Health (0–100, floor 25). Daily tick (existing `tickIfNeeded`) becomes:
